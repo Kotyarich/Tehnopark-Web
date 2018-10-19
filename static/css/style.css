@@ -1,0 +1,65 @@
+#name {
+    font-size: 2rem
+}
+
+.gr-yell {
+    background-color: greenyellow
+}
+
+a {
+    color: brown
+}
+
+body {
+    background-color: lightyellow;    
+    height: 100%;
+}
+
+
+.light-gr-yell {
+    background-color: lemonchiffon;
+    color: brown;
+}
+
+.brown {
+    color: brown;
+}
+
+#br {
+    color: brown;
+}
+
+.rating .btn {
+    background-color: coral;
+}
+
+li.media.border {
+    padding: 10px 10px;
+}
+
+.rating .btn-primary {
+    width: 35px;
+}
+
+.avatar {
+    height: 150px;
+    width: 150px;
+}
+
+.sort {
+    font-size: 30px;
+}
+
+html {
+    height: 100%;    
+}
+
+.content {
+    min-height: 100%;
+    padding-bottom: 30px;
+}
+
+footer {
+    height: 30px;
+    margin-top: -30px;
+}
