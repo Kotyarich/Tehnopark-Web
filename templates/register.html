@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block registered_userpanel %}
+{% include "unregistered_panel.html" %}
+{% endblock %}
+
+{% block content %}
+    <h1>Registration</h1>
+    <form class="form-signin mt-3">
+        <div class="form-label-group mt-2">
+            <label for="exampleFormControlInput1">Login</label>
+            <input type="text" class="form-control" id="exampleFormControlInput2" placeholder="nick_name" required>
+        </div>
+
+        <div class="form-label-group mt-2">
+            <label for="inputEmail">Email address</label>
+            <input type="email" id="inputEmail" class="form-control" placeholder="Email address" required>
+        </div>
+
+        <div class="form-group mt-2">
+            <label for="exampleFormControlInput1">NickName</label>
+            <input type="text" class="form-control" id="exampleFormControlInput1" placeholder="NickName" required>
+        </div>
+
+        <div class="form-label-group mt-2">
+            <label for="inputPassword">Password</label>
+            <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
+        </div>
+                                
+        <div class="form-label-group mt-2">
+            <label for="inputPassword">Repeat password</label>
+            <input type="password" id="repeattPassword" class="form-control" placeholder="Repeat password" required>
+        </div>
+
+        <form>
+            <div class="mt-2 form-group">
+                <label for="exampleFormControlFile1">Upload avatar</label>
+                <input type="file" class="light-gr-yell form-control-file" id="exampleFormControlFile1">
+            </div>
+        </form>
+
+        <button class="brown gr-yell btn btn-lg btn-primary btn-block" type="submit">Register!</button>
+    </form>
+{% endblock %}

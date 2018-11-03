@@ -1,0 +1,25 @@
+<nav class="pag" aria-label="Page navigation">
+    <ul class="pagination brown">
+        {% if questions.has_previous %}
+            <li class="page-item"><a class="page-link brown" href="?page={{ questions.previous_page_number }}">Previous</a></li>
+            <li class="page-item"><a class="page-link brown" href="?page=1">1</a></li>
+        {% endif %}
+
+        {% if questions.number > 2 %}
+            <li class="page-item"><a class="page-link brown" href="?page=1">...</a></li>
+            <li class="page-item"><a class="page-link brown" href="?page={{ questions.previous_page_number }}">{{ questions.previous_page_number }}</a></li>
+        {% endif %}
+
+        <li class="page-item"><a class="page-link brown" href="#">{{ questions.number }}</a></li>
+
+        {% if questions.next_page_number < questions.paginator.num_pages %}
+            <li class="page-item"><a class="page-link brown" href="?page={{ questions.next_page_number }}">{{ questions.next_page_number }}</a></li>
+            <li class="page-item"><a class="page-link brown" href="?page={{ questions.paginator.num_pages }}">...</a></li>
+        {% endif %}
+
+        {% if questions.has_next %}
+            <li class="page-item"><a class="page-link brown" href="?page={{ questions.paginator.num_pages }}">{{ questions.paginator.num_pages }}</a></li>
+            <li class="page-item"><a class="page-link brown" href="?page={{ questions.next_page_number }}">Next</a></li>
+        {% endif %}
+    </ul>
+</nav>

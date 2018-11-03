@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block registered_userpanel %}
+{% include "registered_panel.html" %}
+{% endblock %}
+
+{% block content %}
+    <h1>New Question</h1>
+    <div class="input">
+        <div class="form-group">
+            <label for="exampleFormControlInput1">Title</label>
+            <input type="text" class="form-control" id="exampleFormControlInput1" placeholder="How to build a moon pasrk?" required>
+        </div>
+        <div class="form-group">
+            <label for="exampleFormControlTextarea1">Text</label>
+            <textarea type="text" class="form-control" id="exampleFormControlTextarea1" placeholder="Really, how ?" rows="5" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="exampleFormControlInput1">Tags</label>
+            <input class="form-control" id="exampleFormControlInput2" placeholder="moon, park">
+        </div>
+        <button type="button" class="btn btn-success"> <b>Ask</b> </button>
+    </div>
+{% endblock %}
