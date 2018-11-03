@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block registered_userpanel %}
+{% include "registered_panel.html" %}
+{% endblock %}
+
+{% block content %}
+    <h1>Settings: NickName</h1>
+    <div class="input">
+        <div class="form-group">
+            <label for="exampleFormControlInput1">Login</label>
+            <input class="form-control" id="exampleFormControlInput1" value="nick_name">
+        </div>
+        <div class="form-group">
+            <label for="exampleFormControlInput1">E-mail</label>
+            <input type="email" class="form-control" id="exampleFormControlInput2" value="nick_name@mail.ru">
+        </div>
+        <div class="form-group">
+            <label for="exampleFormControlInput1">NickName</label>
+            <input class="form-control" id="exampleFormControlInput3" value="NickName">
+        </div>
+        <form>
+            <div class="form-group">
+                <label for="exampleFormControlFile1">Upload avatar</label>
+                <input type="file" class="light-gr-yell form-control-file" id="exampleFormControlFile1">
+            </div>
+        </form>
+        <div class="avatar mb-3">
+            <img src="{% static 'img/fff300.jpg' %}" alt="avatar" class="img-thumbnail">
+        </div>
+        <button type="button" class="btn btn-success"> <b>Save</b> </button>
+    </div>
+{% endblock %}
