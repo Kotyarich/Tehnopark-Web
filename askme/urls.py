@@ -19,7 +19,6 @@ from django.urls import path
 from questions import views
 
 urlpatterns = [
-    path('new/', views.new_questions, name='new_questions1'),
     path('admin/', admin.site.urls),
     path('', views.index, name='new_questions'),
     path('hot/', views.hot, name='hot'),
@@ -27,6 +26,6 @@ urlpatterns = [
     path('signup/', views.register, name='signup'),
     path('ask/', views.ask, name='ask'),
     path('settings/', views.settings, name='settings'),
-    path('question/35/', views.question, name='question'),
-    path('tag/bla', views.tag, name='tag'),
+    path('question/<int:id>/', views.question, name='question'),
+    path('tag/<str:tag>', views.tag, name='tag'),
 ]

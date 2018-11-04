@@ -1,0 +1,13 @@
+{% load static %}
+{% include "pagination.html" %}
+{% for question in questions %}
+<div class="media mb-4">
+    <div>
+        <img class="mr-3" src="{% static 'img/fff75.jpg' %}" alt="Generic placeholder image">
+    </div>
+    <div class="media-body">
+        <p>{{ question.text }}</p>
+    </div>
+</div>
+{% endfor %}
+{% include "pagination.html" %}

@@ -18,16 +18,16 @@
         </div>
     </div>
     <div class="media-body">
-        <h3 class="mt-0 mb-1">List-based media object</h3>
-        <p>Cras sit amet nibh libero, in gravida nulla. Nulla vel metus scelerisque ante sollicitudin. Cras purus odio, vestibulum in vulputate at, tempus viverra turpis. Fusce condimentum nunc ac nisi vulputate fringilla. Donec lacinia congue felis in faucibus.</p>
-        <a class="mr-3" href="#">answer(3)</a>
+        <h3 class="mt-0 mb-1">{{ question.title }}</h3>
+        <p>{{ question.text }}</p>
         Tags:
-        <a href="#">bender</a>
-        <a href="#">black-jack</a>
+        {% for tag in question.tags.all %}
+            <a href="{{ tag.get_absolute_url }}">{{ tag.text }}</a>
+        {% endfor %}
     </div>
 </div>
 <hr>
-{% include "questions_list.html" %}
+{% include "answers_list.html" %}
 <div class="form-group">
     <textarea type="text" class="form-control" id="exampleFormControlTextarea1" placeholder="Enter your answer here" rows="5" required></textarea>
 </div>

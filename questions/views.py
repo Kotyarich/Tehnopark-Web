@@ -1,26 +1,12 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import path
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from faker import Faker
-from questions.models import Question
+from questions.models import Question, Answer
 
 fake = Faker()
-
-
-def new_questions(request):
-    questions = Question.objects.all().order_by('-created_at')
-    return render(request, 'questions_list.html', {
-        'questions': questions
-    })
-
-
-def q(request, pk):
-    question = Question.objects.get(pk=pk)
-    return render(request, 'list_question.html', {
-        'questions': question
-    })
 
 
 def paginate(objects_list, request):
@@ -38,28 +24,14 @@ def paginate(objects_list, request):
 
 # Create your views here.
 def index(request):
-    questions_list = [
-        {
-            'id': id,
-            'title': fake.sentence(),
-            'text': fake.text(),
-        } for id in range(105)
-    ]
-
+    questions_list = Question.objects.get_new()
     questions, paginator = paginate(questions_list, request)
 
     return render(request, 'index.html', {'questions': questions})
 
 
 def hot(request):
-    questions_list = [
-        {
-            'id': id,
-            'title': fake.sentence(),
-            'text': fake.text(),
-        } for id in range(9)
-    ]
-
+    questions_list = Question.objects.get_hot()
     questions, paginator = paginate(questions_list, request)
 
     return render(request, 'index.html', {'questions': questions})
@@ -81,25 +53,16 @@ def settings(request):
     return render(request, 'settings.html')
 
 
-def question(request):
-    answers_list = [
-        {
-            'id': id,
-            'title': fake.sentence(),
-            'text': fake.text(),
-        } for id in range(10)
-    ]
+def question(request, id):
+    question = get_object_or_404(Question, pk=id)
+    answers_list = Answer.objects.filter(question=question)
     answers, paginator = paginate(answers_list, request)
-    return render(request, 'question.html', {'questions': answers})
+
+    return render(request, 'question.html', {'questions': answers, 'question': question})
 
 
-def tag(request):
-    questions_list = [
-        {
-            'id': id,
-            'title': fake.sentence(),
-            'text': fake.text(),
-        } for id in range(10)
-    ]
+def tag(request, tag):
+    questions_list = Question.objects.get_tag(tag)
     questions, paginator = paginate(questions_list, request)
-    return render(request, 'tagsearch.html', {'questions': questions})
+
+    return render(request, 'tagsearch.html', {'questions': questions, 'tag': tag})
