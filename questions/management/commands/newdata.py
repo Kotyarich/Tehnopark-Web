@@ -18,14 +18,6 @@ class Command(BaseCommand):
         parser.add_argument('--questions', type=int, default=0)
 
     def handle(self, *args, **options):
-        # for _ in range(options.get("users")):
-        #     try:
-        #         User.objects.create_user(faker.user_name())
-        #     except IntegrityError:
-        #         pass
-        # uids = User.objects.va
-        # for _ in range(options.get("")):
-        #     pass
         self.create_tags()
         self.create_profiles()
         self.create_questions()
@@ -35,8 +27,8 @@ class Command(BaseCommand):
         if Tag.objects.count() > 0:
             return
 
-        for i in range(15):
-            tag = Tag.objects.create(text=faker.word())
+        for i in range(30):
+            tag = Tag.objects.create(text=faker.word() + str(i))
             tag.save()
 
     def create_profiles(self):
@@ -52,12 +44,16 @@ class Command(BaseCommand):
         if Question.objects.count() > 0:
             return
 
-        tags = [Tag.objects.all()]
-        for i in range(30):
-            question = Question.objects.create(title=faker.sentence(), text=faker.text(), author=User.objects.first())
-            for j in range(2):
-                question.tags.set(random.choice(tags))
-                question.save()
+        tags = Tag.objects.all()
+        for i in range(1000):
+            question = Question.objects.create(title=faker.sentence(),
+                                               text=faker.text(),
+                                               author=User.objects.first(),
+                                               rating=random.randint(-2, 20))
+            for j in range(3):
+                tag = random.choice(tags)
+                question.tags.add(tag)
+            question.save()
 
     def create_answers(self):
         if Answer.objects.count() > 0:
