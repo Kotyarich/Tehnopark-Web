@@ -27,14 +27,14 @@ def index(request):
     questions_list = Question.objects.get_new()
     questions, paginator = paginate(questions_list, request)
 
-    return render(request, 'index.html', {'questions': questions})
+    return render(request, 'index.html', {'objects': questions})
 
 
 def hot(request):
     questions_list = Question.objects.get_hot()
     questions, paginator = paginate(questions_list, request)
 
-    return render(request, 'index.html', {'questions': questions})
+    return render(request, 'index.html', {'objects': questions})
 
 
 def login(request):
@@ -58,11 +58,11 @@ def question(request, id):
     answers_list = Answer.objects.filter(question=question)
     answers, paginator = paginate(answers_list, request)
 
-    return render(request, 'question.html', {'questions': answers, 'question': question})
+    return render(request, 'question.html', {'objects': answers, 'question': question})
 
 
 def tag(request, tag):
     questions_list = Question.objects.get_tag(tag)
     questions, paginator = paginate(questions_list, request)
 
-    return render(request, 'tagsearch.html', {'questions': questions, 'tag': tag})
+    return render(request, 'tagsearch.html', {'objects': questions, 'tag': tag})
