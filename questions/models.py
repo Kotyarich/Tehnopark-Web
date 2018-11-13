@@ -1,3 +1,5 @@
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import reverse
 from django.db import models
 from django.contrib.auth.models import User
@@ -58,6 +60,8 @@ class QuestionLike(models.Model):
         ('UP', 1),
         ('DOWN', -1),
     )
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
     value = models.SmallIntegerField(choices=VALUES)
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
