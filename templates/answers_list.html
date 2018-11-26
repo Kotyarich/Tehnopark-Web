@@ -4,6 +4,13 @@
 <div class="media mb-4">
     <div>
         <img class="mr-3" src="{% static 'img/fff75.jpg' %}" alt="Generic placeholder image">
+        <div class="rating mt-2 mr-3">
+            <button type="button" class="btn btn-block btn-outline-dark" disabled>0</button>
+            <div class="mt-1">
+                <button type="button" class="btn btn-primary brown">+</button>
+                <button type="button" class="btn btn-primary brown">-</button>
+            </div>
+        </div>
     </div>
     <div class="media-body">
         <p>{{ answer.text }}</p>

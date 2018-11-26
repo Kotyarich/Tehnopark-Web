@@ -1,4 +1,4 @@
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import reverse
 from django.db import models
@@ -16,6 +16,25 @@ class QuestionManager(models.Manager):
         return self.filter(tags__text=tag)
 
 
+class Profile(models.Model):
+    user = models.OneToOneField(User, related_name='user', on_delete=models.CASCADE)
+    avatar = models.ImageField(upload_to='avatars')
+    nickname = models.CharField(max_length=100, unique=True)
+
+
+class Like(models.Model):
+    VALUES = (
+        ('UP', 1),
+        ('DOWN', -1),
+    )
+    value = models.SmallIntegerField(choices=VALUES)
+    user = models.ForeignKey(User, related_name='liker', on_delete=models.CASCADE)
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey('content_type', 'object_id')
+
+
 class Question(models.Model):
     title = models.CharField(max_length=128)
     text = models.TextField()
@@ -24,6 +43,7 @@ class Question(models.Model):
     tags = models.ManyToManyField(to='Tag', related_name='questions')
     rating = models.IntegerField(default=0)
     objects = QuestionManager()
+    likes = GenericRelation(Like)
 
     def __str__(self):
         return '[pk={}] {}'.format(self.pk, self.title)
@@ -44,24 +64,8 @@ class Answer(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, related_name='question', on_delete=models.CASCADE)
+    rating = models.IntegerField(default=0)
+    likes = GenericRelation(Like)
 
     def __str__(self):
         return self.text
-
-
-class Profile(models.Model):
-    user = models.OneToOneField(User, related_name='user', on_delete=models.CASCADE)
-    avatar = models.ImageField(upload_to='avatars')
-    nickname = models.CharField(max_length=100, unique=True)
-
-
-class QuestionLike(models.Model):
-    VALUES = (
-        ('UP', 1),
-        ('DOWN', -1),
-    )
-    value = models.SmallIntegerField(choices=VALUES)
-
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
