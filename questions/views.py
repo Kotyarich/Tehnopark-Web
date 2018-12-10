@@ -1,10 +1,13 @@
-from django.shortcuts import render, get_object_or_404
-from django.contrib import admin
-from django.http import HttpResponse
-from django.urls import path
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import admin, auth
+from django.http import HttpResponse, HttpResponseRedirect
+from django.urls import path, reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from faker import Faker
 from questions.models import Question, Answer
+from questions.forms import LoginForm, RegisterForm, EditForm
 
 fake = Faker()
 
@@ -22,7 +25,6 @@ def paginate(objects_list, request):
     return objects_page, paginator
 
 
-# Create your views here.
 def index(request):
     questions_list = Question.objects.get_new()
     questions, paginator = paginate(questions_list, request)
@@ -38,19 +40,56 @@ def hot(request):
 
 
 def login(request):
-    return render(request, 'login.html')
+    if request.POST:
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            cdata = form.cleaned_data
+            user = auth.authenticate(
+                username=cdata['username'],
+                password=cdata['password']
+            )
+            if user is not None:
+                auth.login(request, user)
+                return redirect(request.GET.get('redirect_to'))
+            form.add_error('username', "Wrong username or password")
+    else:
+        form = LoginForm()
+
+    return render(request, 'login.html', {'form': form})
+
+
+def logout(request):
+    auth.logout(request)
+    return redirect(request.GET.get('redirect_to'))
 
 
 def register(request):
-    return render(request, 'register.html')
+    if request.POST:
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            cdata = form.cleaned_data
+            user = User.objects.create_user(
+                cdata['nickname'],
+                cdata['email'],
+                cdata['password']
+            )
+            user.save()
+            print(cdata['nickname'], cdata['email'], cdata['password'])
+            return redirect('new_questions')
+    else:
+        form = RegisterForm()
+    return render(request, 'register.html', {'form': form})
 
 
+@login_required(login_url='login', redirect_field_name='redirect_to')
 def ask(request):
     return render(request, 'ask.html')
 
 
+@login_required(login_url='login', redirect_field_name='redirect_to')
 def settings(request):
-    return render(request, 'settings.html')
+    form = EditForm()
+    return render(request, 'settings.html', {'form': form})
 
 
 def question(request, id):

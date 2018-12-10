@@ -11,6 +11,6 @@
     <div><b>NickName</b></div>
     <div>
         <a href="{% url 'settings' %}">Settings</a>
-        <a class="ml-3" href="{% url 'login' %}">Log Out</a>
+        <a class="ml-3" href="{% url 'logout' %}?redirect_to={{ request.get_full_path|urlencode }}">Log Out</a>
     </div>
 </div>

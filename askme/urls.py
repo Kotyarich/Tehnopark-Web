@@ -23,6 +23,7 @@ urlpatterns = [
     path('', views.index, name='new_questions'),
     path('hot/', views.hot, name='hot'),
     path('login/', views.login, name='login'),
+    path('logout/', views.logout, name='logout'),
     path('signup/', views.register, name='signup'),
     path('ask/', views.ask, name='ask'),
     path('settings/', views.settings, name='settings'),

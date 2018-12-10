@@ -2,7 +2,11 @@
 {% load static %}
 
 {% block registered_userpanel %}
+{% if user.is_authenticated %}
 {% include "registered_panel.html" %}
+{% else %}
+{% include "unregistered_panel.html" %}
+{% endif %}
 {% endblock %}
 
 {% block content %}
