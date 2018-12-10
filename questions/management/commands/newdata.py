@@ -31,7 +31,7 @@ class Command(BaseCommand):
         if Tag.objects.count() > 0:
             return
 
-        for i in range(30):
+        for i in range(40):
             tag = Tag.objects.create(text=faker.word() + str(i))
             tag.save()
 
@@ -43,7 +43,7 @@ class Command(BaseCommand):
         user.save()
         p = Profile.objects.create(user=user)
         p.save()
-        for i in range(15):
+        for i in range(40):
             user = User.objects.create_user(
                 username=str(i)+str(i),
                 password='pass{}'.format(i),
@@ -55,7 +55,7 @@ class Command(BaseCommand):
             return
 
         tags = Tag.objects.all()
-        for i in range(25):
+        for i in range(101):
             question = Question.objects.create(title=faker.sentence(),
                                                text=faker.text(),
                                                author=User.objects.first(),
@@ -69,13 +69,13 @@ class Command(BaseCommand):
         if Answer.objects.count() > 0:
             return
         for question in Question.objects.all():
-            for i in range(random.randint(1, 15)):
+            for i in range(random.randint(1, 25)):
                 a = Answer.objects.create(text=faker.text(), question=question, author=User.objects.first())
                 a.save()
 
     def create_likes(self, users, questions, answers):
         for user in users:
-            qs = random.sample(list(questions), 10)
+            qs = random.sample(list(questions), 40)
             for q in qs:
                 value = random.choice([1, -1])
                 like = Like(value=value, user=user, content_object=q)
@@ -83,7 +83,7 @@ class Command(BaseCommand):
                 like.content_object.rating += like.value
                 like.content_object.save(update_fields=['rating'])
 
-            ans = random.sample(list(answers), 40)
+            ans = random.sample(list(answers), 100)
             for a in ans:
                 value = random.choice([1, -1])
                 like = Like(value=value, user=user, content_object=a)

@@ -10,7 +10,7 @@ class QuestionManager(models.Manager):
         return self.order_by('-rating')
 
     def get_new(self):
-        return self.order_by('created_at')
+        return self.order_by('-created_at')
 
     def get_tag(self, tag):
         return self.filter(tags__text=tag)
