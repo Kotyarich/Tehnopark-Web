@@ -6,8 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.urls import path, reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from faker import Faker
-from questions.models import Question, Answer
-from questions.forms import LoginForm, RegisterForm, EditForm, QuestionForm, AnswerForm
+from questions.forms import *
 
 fake = Faker()
 
@@ -119,8 +118,9 @@ def question(request, id):
         form = AnswerForm(request.POST)
         if form.is_valid():
             form.save(request.user, question)
-            print()
-            return redirect(question.get_absolute_url(), kwargs={'page': paginator.num_pages})
+            redirect_to = question.get_absolute_url()\
+                          + '?page={}#form'.format(paginator.num_pages)
+            return redirect(redirect_to)
 
     form = AnswerForm()
     return render(request, 'question.html', {
@@ -134,4 +134,8 @@ def tag(request, tag):
     questions_list = Question.objects.get_tag(tag)
     questions, paginator = paginate(questions_list, request)
 
-    return render(request, 'tagsearch.html', {'objects': questions, 'tag': tag})
+    return render(
+        request,
+        'tagsearch.html',
+        {'objects': questions, 'tag': tag}
+    )

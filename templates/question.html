@@ -32,8 +32,10 @@
 </div>
 <hr>
 {% include "answers_list.html" %}
+{% if user.is_authenticated %}
 <form id="form" method="POST" novalidate>
     {% include "form.html" %}
     <button type="submit" class="btn btn-success"> <b>Answer</b> </button>
 </form>
+{% endif %}
 {% endblock %}

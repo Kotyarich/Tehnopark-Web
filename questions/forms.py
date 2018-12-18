@@ -1,5 +1,6 @@
 from django import forms
-from questions.models import Question, Tag, Answer
+from django.contrib import auth
+from questions.models import Question, Tag, Answer, User, Profile
 
 
 class LoginForm(forms.Form):
@@ -34,6 +35,37 @@ class RegisterForm(forms.Form):
         required=False
     )
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '')
+        if '@' not in email:
+            raise forms.ValidationError('Wrong email')
+        try:
+            _ = User.objects.get(email=email)
+            raise forms.ValidationError('User with the same email is exist')
+        except User.DoesNotExist:
+            return email
+
+    def clean_nickname(self):
+        nickname = self.cleaned_data.get('nickname', '')
+        if len(nickname) > 30:
+            raise forms.ValidationError('Nickname is to be less than 30 symbols')
+        if len(nickname) < 6:
+            raise forms.ValidationError('Nickname is to be more than 5 symbols')
+        return nickname
+
+    def clean_password(self):
+        password = self.cleaned_data.get('password', '')
+        if len(password) < 6:
+            raise forms.ValidationError('Password is to be more than 5 symbols')
+        return password
+
+    def clean_repeat_password(self):
+        repeat_password = self.cleaned_data.get('password_repeat', '')
+        password = self.cleaned_data.get('password', '')
+        if repeat_password != password:
+            raise forms.ValidationError('Field isn\'t equal to password')
+        return repeat_password
+
 
 class EditForm(forms.Form):
     nickname = forms.CharField(
@@ -49,6 +81,33 @@ class EditForm(forms.Form):
         required=False
     )
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '')
+        if '@' not in email:
+            raise forms.ValidationError('Wrong email')
+        try:
+            _ = User.objects.get(email=email)
+            raise forms.ValidationError('User with the same email is exist')
+        except User.DoesNotExist:
+            return email
+
+    def clean_nickname(self):
+        nickname = self.cleaned_data.get('nickname', '')
+        if len(nickname) > 30:
+            raise forms.ValidationError('Nickname is to be less than 30 symbols')
+        if len(nickname) < 6:
+            raise forms.ValidationError('Nickname is to be more than 5 symbols')
+        return nickname
+
+    def save(self, request):
+        cdata = self.cleaned_data
+        user = auth.get_user(request)
+        if 'nickname' in cdata:
+            user.username = cdata['nickname']
+        if 'email' in cdata:
+            user.email = cdata['email']
+        user.save()
+
 
 class QuestionForm(forms.Form):
     title = forms.CharField(
@@ -60,6 +119,29 @@ class QuestionForm(forms.Form):
     tags = forms.CharField(
         required=True
     )
+
+    def clean_text(self):
+        text = self.cleaned_data.get('text', '')
+        if len(text.strip()) == 0:
+            raise forms.ValidationError("Text of question is to be not empty")
+        return text
+
+    def clean_title(self):
+        title = self.cleaned_data.get('title', '')
+        if len(title.strip()) == 0:
+            raise forms.ValidationError("Title is to be not empty")
+        return title
+
+    def clean_tags(self):
+        tags = self.cleaned_data.get('tags', '')
+        tag_list = tags.split()
+        if len(tag_list) == 0:
+            raise forms.ValidationError("Tags are to be not empty")
+        for tag in tags:
+            if not tag.isalpha():
+                raise forms.ValidationError("You can use only letters in tags")
+
+        return tags
 
     def save(self, user):
         data = self.cleaned_data
@@ -82,6 +164,12 @@ class AnswerForm(forms.Form):
         required=True,
         widget=forms.Textarea(attrs={'rows': 3, 'cols': 40})
     )
+
+    def clean_text(self):
+        text = self.cleaned_data.get('text', '')
+        if len(text.strip()) == 0:
+            raise forms.ValidationError("Text of question is to be not empty")
+        return text
 
     def save(self, user, question):
         answer = Answer.objects.create(
