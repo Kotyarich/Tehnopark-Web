@@ -37,6 +37,8 @@ class RegisterForm(forms.Form):
 
     def clean_email(self):
         email = self.cleaned_data.get('email', '')
+        if email == "":
+            return email
         if '@' not in email:
             raise forms.ValidationError('Wrong email')
         try:
@@ -51,7 +53,11 @@ class RegisterForm(forms.Form):
             raise forms.ValidationError('Nickname is to be less than 30 symbols')
         if len(nickname) < 6:
             raise forms.ValidationError('Nickname is to be more than 5 symbols')
-        return nickname
+        try:
+            _ = User.objects.get(username=nickname)
+            raise forms.ValidationError('User with the same nickname is exist')
+        except User.DoesNotExist:
+            return nickname
 
     def clean_password(self):
         password = self.cleaned_data.get('password', '')
@@ -60,11 +66,22 @@ class RegisterForm(forms.Form):
         return password
 
     def clean_repeat_password(self):
-        repeat_password = self.cleaned_data.get('password_repeat', '')
+        repeat_password = self.cleaned_data.get('repeat_password', '')
         password = self.cleaned_data.get('password', '')
         if repeat_password != password:
             raise forms.ValidationError('Field isn\'t equal to password')
         return repeat_password
+
+    def save(self):
+        cdata = self.cleaned_data
+        user = User.objects.create_user(
+            cdata['nickname'],
+            cdata['email'],
+            cdata['password']
+        )
+        user.save()
+        profile = Profile.objects.create(user=user, nickname=cdata['nickname'])
+        profile.save()
 
 
 class EditForm(forms.Form):
@@ -83,6 +100,8 @@ class EditForm(forms.Form):
 
     def clean_email(self):
         email = self.cleaned_data.get('email', '')
+        if email == '':
+            return email
         if '@' not in email:
             raise forms.ValidationError('Wrong email')
         try:
@@ -93,18 +112,37 @@ class EditForm(forms.Form):
 
     def clean_nickname(self):
         nickname = self.cleaned_data.get('nickname', '')
+        if nickname == '':
+            return nickname
         if len(nickname) > 30:
             raise forms.ValidationError('Nickname is to be less than 30 symbols')
         if len(nickname) < 6:
             raise forms.ValidationError('Nickname is to be more than 5 symbols')
-        return nickname
+        try:
+            _ = User.objects.get(username=nickname)
+            raise forms.ValidationError('User with the same nickname is exist')
+        except User.DoesNotExist:
+            return nickname
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data['email'] == '' and cleaned_data['nickname'] == '':
+            msg = 'You need to feel at least one field'
+            self.add_error('nickname', msg)
+            self.add_error('email', msg)
+            raise forms.ValidationError(msg, code='empty')
+        return cleaned_data
 
     def save(self, request):
+        self.clean()
         cdata = self.cleaned_data
         user = auth.get_user(request)
-        if 'nickname' in cdata:
+        profile = Profile.objects.get(user=user)
+        if 'nickname' in cdata and cdata['nickname'] != '':
             user.username = cdata['nickname']
-        if 'email' in cdata:
+            profile.nickname = cdata['nickname']
+            profile.save()
+        if 'email' in cdata and cdata['email'] != '':
             user.email = cdata['email']
         user.save()
 

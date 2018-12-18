@@ -66,13 +66,7 @@ def register(request):
     if request.POST:
         form = RegisterForm(request.POST)
         if form.is_valid():
-            cdata = form.cleaned_data
-            user = User.objects.create_user(
-                cdata['nickname'],
-                cdata['email'],
-                cdata['password']
-            )
-            user.save()
+            form.save()
             return redirect('new_questions')
     else:
         form = RegisterForm()
@@ -97,13 +91,7 @@ def settings(request):
     if request.POST:
         form = EditForm(request.POST)
         if form.is_valid():
-            cdata = form.cleaned_data
-            user = auth.get_user(request)
-            if 'nickname' in cdata:
-                user.username = cdata['nickname']
-            if 'email' in cdata:
-                user.email = cdata['email']
-            user.save()
+            form.save(request)
             return redirect('settings')
     else:
         form = EditForm()

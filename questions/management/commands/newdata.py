@@ -56,10 +56,12 @@ class Command(BaseCommand):
 
         tags = Tag.objects.all()
         for i in range(101):
-            question = Question.objects.create(title=faker.sentence(),
-                                               text=faker.text(),
-                                               author=User.objects.first(),
-                                               rating=0)
+            question = Question.objects.create(
+                title=faker.sentence(),
+                text=faker.text(),
+                author=User.objects.first(),
+                rating=0
+            )
             for j in range(3):
                 tag = random.choice(tags)
                 question.tags.add(tag)
