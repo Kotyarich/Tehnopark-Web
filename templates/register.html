@@ -6,7 +6,7 @@
 
 {% block content %}
 <h1>Registration</h1>
-<form method="POST" novalidate>
+<form enctype="multipart/form-data" method="POST" novalidate>
     {% include "form.html" %}
     <button class="brown mt-4 gr-yell btn btn-lg btn-primary btn-block" type="submit">Register!</button>
 </form>

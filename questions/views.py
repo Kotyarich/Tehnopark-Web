@@ -24,18 +24,32 @@ def paginate(objects_list, request):
     return objects_page, paginator
 
 
+def current_profile(user):
+    if user.is_authenticated:
+        return Profile.objects.get(user=user)
+    return None
+
+
 def index(request):
     questions_list = Question.objects.get_new()
     questions, paginator = paginate(questions_list, request)
 
-    return render(request, 'index.html', {'objects': questions})
+    return render(
+        request,
+        'index.html',
+        {'objects': questions, 'profile': current_profile(request.user)}
+    )
 
 
 def hot(request):
     questions_list = Question.objects.get_hot()
     questions, paginator = paginate(questions_list, request)
 
-    return render(request, 'index.html', {'objects': questions})
+    return render(
+        request,
+        'index.html',
+        {'objects': questions, 'profile': current_profile(request.user)},
+    )
 
 
 def login(request):
@@ -64,9 +78,9 @@ def logout(request):
 
 def register(request):
     if request.POST:
-        form = RegisterForm(request.POST)
+        form = RegisterForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            form.save(request)
             return redirect('new_questions')
     else:
         form = RegisterForm()
@@ -83,19 +97,27 @@ def ask(request):
     else:
         form = QuestionForm()
 
-    return render(request, 'ask.html', {'form': form})
+    return render(
+        request,
+        'ask.html',
+        {'form': form, 'profile': current_profile(request.user)}
+    )
 
 
 @login_required(login_url='login', redirect_field_name='redirect_to')
 def settings(request):
     if request.POST:
-        form = EditForm(request.POST)
+        form = EditForm(request.POST, request.FILES)
         if form.is_valid():
             form.save(request)
             return redirect('settings')
     else:
         form = EditForm()
-    return render(request, 'settings.html', {'form': form})
+    return render(
+        request,
+        'settings.html',
+        {'form': form, 'profile': current_profile(request.user)}
+    )
 
 
 def question(request, id):
@@ -114,7 +136,8 @@ def question(request, id):
     return render(request, 'question.html', {
         'objects': answers,
         'question': question,
-        'form': form
+        'form': form,
+        'profile': current_profile(request.user)
     })
 
 
@@ -125,5 +148,5 @@ def tag(request, tag):
     return render(
         request,
         'tagsearch.html',
-        {'objects': questions, 'tag': tag}
+        {'objects': questions, 'tag': tag, 'profile': current_profile(request.user)}
     )

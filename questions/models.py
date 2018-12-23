@@ -18,7 +18,7 @@ class QuestionManager(models.Manager):
 
 class Profile(models.Model):
     user = models.OneToOneField(User, related_name='user', on_delete=models.CASCADE)
-    avatar = models.ImageField(upload_to='avatars')
+    avatar = models.ImageField(upload_to='avatars', default='default.jpg')
     nickname = models.CharField(max_length=100, unique=True)
 
 
@@ -51,6 +51,9 @@ class Question(models.Model):
     def get_absolute_url(self):
         return reverse("question", kwargs={'id': self.pk})
 
+    def get_user(self):
+        return Profile.objects.get(user=self.author)
+
 
 class Tag(models.Model):
     text = models.SlugField(unique=True)
@@ -69,3 +72,6 @@ class Answer(models.Model):
 
     def __str__(self):
         return self.text
+
+    def get_user(self):
+        return Profile.objects.get(user=self.author)

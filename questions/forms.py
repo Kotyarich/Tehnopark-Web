@@ -31,16 +31,24 @@ class RegisterForm(forms.Form):
     )
     avatar = forms.FileField(
         allow_empty_file=False,
-        widget=forms.FileInput,
+        widget=forms.ClearableFileInput,
         required=False
     )
+
+    def clean_avatar(self):
+        avatar = self.cleaned_data.get('avatar')
+        if avatar is None:
+            return None
+        if 'image' not in avatar.content_type:
+            raise forms.ValidationError('Invalid file type')
+        return avatar
 
     def clean_email(self):
         email = self.cleaned_data.get('email', '')
         if email == "":
             return email
-        if '@' not in email:
-            raise forms.ValidationError('Wrong email')
+        if email.find('@') < 1 or len(email) < 3:
+            raise forms.ValidationError('Invalid email')
         try:
             _ = User.objects.get(email=email)
             raise forms.ValidationError('User with the same email is exist')
@@ -72,7 +80,7 @@ class RegisterForm(forms.Form):
             raise forms.ValidationError('Field isn\'t equal to password')
         return repeat_password
 
-    def save(self):
+    def save(self, request):
         cdata = self.cleaned_data
         user = User.objects.create_user(
             cdata['nickname'],
@@ -81,6 +89,8 @@ class RegisterForm(forms.Form):
         )
         user.save()
         profile = Profile.objects.create(user=user, nickname=cdata['nickname'])
+        if 'avatar' in cdata:
+            profile.avatar = request.FILES['avatar']
         profile.save()
 
 
@@ -94,7 +104,7 @@ class EditForm(forms.Form):
     )
     avatar = forms.FileField(
         allow_empty_file=False,
-        widget=forms.FileInput,
+        widget=forms.ClearableFileInput,
         required=False
     )
 
@@ -102,7 +112,7 @@ class EditForm(forms.Form):
         email = self.cleaned_data.get('email', '')
         if email == '':
             return email
-        if '@' not in email:
+        if email.find('@') < 1 or len(email) < 3:
             raise forms.ValidationError('Wrong email')
         try:
             _ = User.objects.get(email=email)
@@ -126,11 +136,14 @@ class EditForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        if cleaned_data['email'] == '' and cleaned_data['nickname'] == '':
+        if cleaned_data['email'] == '' and cleaned_data['nickname'] == '' \
+                and cleaned_data['avatar'] is None:
             msg = 'You need to feel at least one field'
             self.add_error('nickname', msg)
             self.add_error('email', msg)
             raise forms.ValidationError(msg, code='empty')
+        if 'image' not in cleaned_data['avatar'].content_type:
+            self.add_error('avatar', "Invalid type of file")
         return cleaned_data
 
     def save(self, request):
@@ -141,9 +154,11 @@ class EditForm(forms.Form):
         if 'nickname' in cdata and cdata['nickname'] != '':
             user.username = cdata['nickname']
             profile.nickname = cdata['nickname']
-            profile.save()
         if 'email' in cdata and cdata['email'] != '':
             user.email = cdata['email']
+        if 'avatar' in cdata:
+            profile.avatar = request.FILES['avatar']
+        profile.save()
         user.save()
 
 
