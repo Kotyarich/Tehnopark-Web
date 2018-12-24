@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import render, get_object_or_404, redirect
@@ -7,6 +9,7 @@ from django.urls import path, reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from faker import Faker
 from questions.forms import *
+from questions.models import Like
 
 fake = Faker()
 
@@ -28,6 +31,32 @@ def current_profile(user):
     if user.is_authenticated:
         return Profile.objects.get(user=user)
     return None
+
+
+@login_required(login_url='login', redirect_field_name='redirect_to')
+def like(request):
+    if request.method == 'POST':
+        value = int(request.POST.get('value'))
+        pk = request.POST.get('pk')
+        print(pk)
+        question = Question.objects.get(pk=pk)
+        try:
+            like = question.likes.get(user=request.user)
+            if like.value != value:
+                question.rating += value * 2
+                like.value = value
+                like.save()
+                question.save()
+        except Like.DoesNotExist:
+            like = Like(value=value, user=request.user, content_object=question)
+            like.save()
+            question.rating += value
+            question.save()
+        response_data = {'result': question.rating}
+        return HttpResponse(
+            json.dumps(response_data),
+            content_type='application/json'
+        )
 
 
 def index(request):
