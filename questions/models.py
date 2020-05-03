@@ -41,14 +41,16 @@ class Answer(models.Model):
     text = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, related_name='question', on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, related_name='question',
+                                 on_delete=models.CASCADE)
 
     def __str__(self):
         return self.text
 
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, related_name='user', on_delete=models.CASCADE)
+    user = models.OneToOneField(User, related_name='user',
+                                on_delete=models.CASCADE)
     avatar = models.ImageField(upload_to='avatars')
     nickname = models.CharField(max_length=100, unique=True)
 

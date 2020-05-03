@@ -1,16 +1,11 @@
 from django.shortcuts import render, get_object_or_404
-from django.contrib import admin
-from django.http import HttpResponse
-from django.urls import path
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from faker import Faker
 from questions.models import Question, Answer
-
-fake = Faker()
 
 
 def paginate(objects_list, request):
-    paginator = Paginator(objects_list, 10)
+    items_per_page = 10
+    paginator = Paginator(objects_list, items_per_page)
     page = request.GET.get('page')
     try:
         objects_page = paginator.page(page)
@@ -22,7 +17,6 @@ def paginate(objects_list, request):
     return objects_page, paginator
 
 
-# Create your views here.
 def index(request):
     questions_list = Question.objects.get_new()
     questions, paginator = paginate(questions_list, request)
@@ -53,16 +47,20 @@ def settings(request):
     return render(request, 'settings.html')
 
 
-def question(request, id):
-    question = get_object_or_404(Question, pk=id)
-    answers_list = Answer.objects.filter(question=question)
+def question(request, pk):
+    question_obj = get_object_or_404(Question, pk=pk)
+    answers_list = Answer.objects.filter(question=question_obj)
     answers, paginator = paginate(answers_list, request)
 
-    return render(request, 'question.html', {'questions': answers, 'question': question})
+    return render(request,
+                  'question.html',
+                  {'questions': answers, 'question': question_obj})
 
 
 def tag(request, tag):
     questions_list = Question.objects.get_tag(tag)
     questions, paginator = paginate(questions_list, request)
 
-    return render(request, 'tagsearch.html', {'questions': questions, 'tag': tag})
+    return render(request,
+                  'tagsearch.html',
+                  {'questions': questions, 'tag': tag})
