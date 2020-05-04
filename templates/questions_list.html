@@ -1,25 +1,37 @@
 {% load static %}
 {% include "pagination.html" %}
-{% for question in questions %}
-<div class="media mb-4">
-    <div>
-        <img class="mr-3" src="{% static 'img/fff75.jpg' %}" alt="Generic placeholder image">
-        <div class="rating mt-2 mr-3">
-            <button type="button" class="btn btn-block btn-outline-dark" disabled>{{ question.rating }}</button>
-            <div class="mt-1">
-                <button type="button" class="btn btn-primary brown">+</button>
-                <button type="button" class="btn btn-primary brown">-</button>
+{% for question in objects %}
+    <div class="media mb-4">
+        <div>
+            <img class="mr-3" src="{{ question.get_user.avatar.url }}"
+                 width="75" height="75" alt="Generic placeholder image">
+            <div class="rating mt-2 mr-3">
+                <button id="{{ question.pk }}" type="button"
+                        class="btn btn-block btn-outline-dark"
+                        disabled>{{ question.rating }}</button>
+                <div class="mt-1">
+                    <form method="POST">
+                        {% csrf_token %}
+                        <button type="submit" add="true"
+                                value="{{ question.pk }}"
+                                class="like btn btn-primary brown">+
+                        </button>
+                        <button type="submit" add="false"
+                                value="{{ question.pk }}"
+                                class="like btn btn-primary brown">-
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
+        <div class="media-body">
+            <a href="{{ question.get_absolute_url }}"><h5
+                    class="mt-0 mb-1">{{ question.title }}</h5></a>
+            <p>{{ question.text }}</p>
+            Tags:
+            {% for tag in question.tags.all %}
+                <a href="{{ tag.get_absolute_url }}">{{ tag.text }}</a>
+            {% endfor %}
+        </div>
     </div>
-    <div class="media-body">
-        <a href="{{ question.get_absolute_url }}"><h5 class="mt-0 mb-1">{{ question.title }}</h5></a>
-        <p>{{ question.text }}</p>
-        Tags:
-        {% for tag in question.tags.all %}
-            <a href="{{ tag.get_absolute_url }}">{{ tag.text }}</a>
-        {% endfor %}
-    </div>
-</div>
 {% endfor %}
-{% include "pagination.html" %}

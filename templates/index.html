@@ -2,13 +2,17 @@
 {% load static %}
 
 {% block registered_userpanel %}
-{% include "registered_panel.html" %}
+    {% if user.is_authenticated %}
+        {% include "registered_panel.html" %}
+    {% else %}
+        {% include "unregistered_panel.html" %}
+    {% endif %}
 {% endblock %}
 
 {% block content %}
-<div class="sort font-weight-bold mb-4">
-    <a class="mr-4" href="{% url 'new_questions' %}">New Questions</a>
-    <a href="{% url 'hot' %}">Hot Questions</a>
-</div>
-{% include "questions_list.html" %}
+    <div class="sort font-weight-bold mb-4">
+        <a class="mr-4" href="{% url 'new_questions' %}">New Questions</a>
+        <a href="{% url 'hot' %}">Hot Questions</a>
+    </div>
+    {% include "questions_list.html" %}
 {% endblock %}

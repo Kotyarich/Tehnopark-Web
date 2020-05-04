@@ -1,16 +1,15 @@
-{% load static %}
 <div class="nav-item ml-5 mr-3">
     <a href="{% url 'ask' %}"> <button type="button" class="btn btn-success"> <b>Ask</b> </button> </a>
 </div>
 
 <div class="nav-item mr-3">
-    <img src="{% static 'img/fff.jpg' %}" width="45" height="45"  alt="avatar" class ="img-circle img-responsive">
+    <img src="{{ profile.avatar.url }}" width="45" height="45"  alt="avatar" class ="img-circle img-responsive">
 </div>
 
 <div class="nav-item">
-    <div><b>NickName</b></div>
+    <div><b>{{ user.username }}</b></div>
     <div>
         <a href="{% url 'settings' %}">Settings</a>
-        <a class="ml-3" href="{% url 'login' %}">Log Out</a>
+        <a class="ml-3" href="{% url 'logout' %}?redirect_to={{ request.get_full_path|urlencode }}">Log Out</a>
     </div>
 </div>
