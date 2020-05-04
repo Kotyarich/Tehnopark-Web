@@ -1,13 +1,11 @@
 import json
 
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import admin, auth
-from django.http import HttpResponse, HttpResponseRedirect
-from django.urls import path, reverse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404, redirect
 from faker import Faker
+
 from questions.forms import *
 from questions.models import Like
 
@@ -38,21 +36,8 @@ def like(request):
     if request.method == 'POST':
         value = int(request.POST.get('value'))
         pk = request.POST.get('pk')
-        print(pk)
-        question = Question.objects.get(pk=pk)
-        try:
-            like = question.likes.get(user=request.user)
-            if like.value != value:
-                question.rating += value * 2
-                like.value = value
-                like.save()
-                question.save()
-        except Like.DoesNotExist:
-            like = Like(value=value, user=request.user, content_object=question)
-            like.save()
-            question.rating += value
-            question.save()
-        response_data = {'result': question.rating}
+        rating = Question.objects.like(request.user, value, pk)
+        response_data = {'result': rating}
         return HttpResponse(
             json.dumps(response_data),
             content_type='application/json'
@@ -157,7 +142,7 @@ def question(request, id):
         form = AnswerForm(request.POST)
         if form.is_valid():
             form.save(request.user, question)
-            redirect_to = question.get_absolute_url()\
+            redirect_to = question.get_absolute_url() \
                           + '?page={}#form'.format(paginator.num_pages)
             return redirect(redirect_to)
 
@@ -177,5 +162,17 @@ def tag(request, tag):
     return render(
         request,
         'tagsearch.html',
-        {'objects': questions, 'tag': tag, 'profile': current_profile(request.user)}
+        {'objects': questions, 'tag': tag,
+         'profile': current_profile(request.user)}
+    )
+
+
+def search(request):
+    query = request.GET.get('query')
+    ranked_top = Question.objects.search(query)[:5]
+    results = [{'id': x.pk, 'title': x.title} for x in ranked_top]
+
+    return HttpResponse(
+        json.dumps({'results': results}),
+        content_type='application/json',
     )

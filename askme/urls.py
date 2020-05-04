@@ -32,5 +32,6 @@ urlpatterns = [
     path('settings/', views.settings, name='settings'),
     path('question/<int:id>/', views.question, name='question'),
     path('tag/<str:tag>', views.tag, name='tag'),
-    path('like/', views.like, name='like')
+    path('like/', views.like, name='like'),
+    path('search/', views.search, name='search')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

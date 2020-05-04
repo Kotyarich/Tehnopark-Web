@@ -89,7 +89,7 @@ class RegisterForm(forms.Form):
         )
         user.save()
         profile = Profile.objects.create(user=user, nickname=cdata['nickname'])
-        if 'avatar' in cdata:
+        if 'avatar' in cdata and cdata['avatar'] is not None:
             profile.avatar = request.FILES['avatar']
         profile.save()
 
