@@ -42,14 +42,6 @@ class Question(models.Model):
     objects = QuestionManager()
     likes = GenericRelation(Like)
 
-    search_vector_title = pg_search.SearchVectorField(null=True)
-    search_vector_text = pg_search.SearchVectorField(null=True)
-
-    class Meta:
-        indexes = [
-            GinIndex(fields=['search_vector_title', 'search_vector_text'])
-        ]
-
     def __str__(self):
         return '[pk={}] {}'.format(self.pk, self.title)
 
