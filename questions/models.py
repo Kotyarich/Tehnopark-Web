@@ -1,63 +1,13 @@
-from datetime import timedelta, datetime
-
-from django.db.models import Count, Q
+import django.contrib.postgres.search as pg_search
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, \
     GenericRelation
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.indexes import GinIndex
-import django.contrib.postgres.search as pg_search
-from django.contrib.postgres.search import SearchQuery, SearchVector, SearchRank
 from django.db import models
 from django.shortcuts import reverse
 
-
-class QuestionManager(models.Manager):
-    def get_hot(self):
-        return self.order_by('-rating')
-
-    def get_new(self):
-        return self.order_by('-created_at')
-
-    def get_tag(self, tag):
-        return self.filter(tags__text=tag)
-
-    def search(self, query):
-        search_query = SearchQuery(query)
-        title_vector = SearchVector('search_vector_title', weight='A')
-        text_vector = SearchVector('search_vector_text', weight='C')
-        rank = SearchRank(title_vector + text_vector, search_query)
-        return self.annotate(rank=rank).order_by('-rank')
-
-    def like(self, user, value, pk):
-        profile = Profile.objects.get(user=user)
-        question = self.get(pk=pk)
-        try:
-            like = question.likes.get(user=user)
-            if like.value != value:
-                profile.rating += value * 2
-                question.rating += value * 2
-                like.value = value
-                like.save()
-                question.save()
-                profile.save()
-        except Like.DoesNotExist:
-            like = Like(value=value, user=user, content_object=question)
-            like.save()
-            profile.rating += value
-            question.rating += value
-            profile.save()
-            question.save()
-        return question.rating
-
-
-class TagManager(models.Manager):
-    def most_popular(self):
-        """Tags with biggest amount of questions in last 3 months"""
-        three_months_ago = datetime.today() - timedelta(days=90)
-        return self.annotate(num_questions=Count(
-            'questions', filter=Q(questions__created_at=three_months_ago))
-        ).order_by('-num_questions')
+from questions.managers import QuestionManager, TagManager
 
 
 class Profile(models.Model):
@@ -108,6 +58,19 @@ class Question(models.Model):
 
     def get_user(self):
         return Profile.objects.get(user=self.author)
+
+
+class PgQuestionSearch(models.Model):
+    question = models.OneToOneField(Question, related_name='pg_question',
+                                    on_delete=models.CASCADE)
+    search_vector_title = pg_search.SearchVectorField(null=True)
+    search_vector_text = pg_search.SearchVectorField(null=True)
+
+    class Meta:
+        required_db_vendor = 'postgresql'
+        indexes = [
+            GinIndex(fields=['search_vector_title', 'search_vector_text'])
+        ]
 
 
 class Tag(models.Model):

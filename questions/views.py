@@ -169,7 +169,8 @@ def tag(request, tag):
 def search(request):
     query = request.GET.get('query')
     ranked_top = Question.objects.search(query)[:5]
-    results = [{'id': x.pk, 'title': x.title} for x in ranked_top]
+    results = [{'id': x.question.pk, 'title': x.question.title} for x in
+               ranked_top]
 
     return HttpResponse(
         json.dumps({'results': results}),
