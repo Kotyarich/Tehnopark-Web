@@ -1,13 +1,11 @@
-import django.contrib.postgres.search as pg_search
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey, \
     GenericRelation
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.postgres.indexes import GinIndex
 from django.db import models
 from django.shortcuts import reverse
 
-from questions.managers import QuestionManager, TagManager
+from questions.managers import QuestionManager, TagManager, ProfileManager
 
 
 class Profile(models.Model):
@@ -16,6 +14,8 @@ class Profile(models.Model):
     avatar = models.ImageField(upload_to='avatars', default='default.jpg')
     nickname = models.CharField(max_length=100, unique=True)
     rating = models.IntegerField(default=0)
+
+    object = ProfileManager()
 
 
 class Like(models.Model):
@@ -50,19 +50,6 @@ class Question(models.Model):
 
     def get_user(self):
         return Profile.objects.get(user=self.author)
-
-
-class PgQuestionSearch(models.Model):
-    question = models.OneToOneField(Question, related_name='pg_question',
-                                    on_delete=models.CASCADE)
-    search_vector_title = pg_search.SearchVectorField(null=True)
-    search_vector_text = pg_search.SearchVectorField(null=True)
-
-    class Meta:
-        required_db_vendor = 'postgresql'
-        indexes = [
-            GinIndex(fields=['search_vector_title', 'search_vector_text'])
-        ]
 
 
 class Tag(models.Model):

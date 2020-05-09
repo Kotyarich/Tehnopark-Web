@@ -24,18 +24,13 @@ def paginate(objects_list, request):
     return objects_page, paginator
 
 
-def current_profile(user):
-    if user.is_authenticated:
-        return Profile.objects.get(user=user)
-    return None
-
-
 @login_required(login_url='login', redirect_field_name='redirect_to')
 def like(request):
     if request.method == 'POST':
         value = int(request.POST.get('value'))
         pk = request.POST.get('pk')
-        rating = Question.objects.like(request.user, value, pk)
+        profile = Profile.objects.get_authenticated(request.user)
+        rating = Question.objects.like(profile, value, pk)
         response_data = {'result': rating}
         return HttpResponse(
             json.dumps(response_data),
@@ -46,22 +41,24 @@ def like(request):
 def index(request):
     questions_list = Question.objects.get_new()
     questions, paginator = paginate(questions_list, request)
+    profile = Profile.objects.get_authenticated(request.user)
 
     return render(
         request,
         'index.html',
-        {'objects': questions, 'profile': current_profile(request.user)}
+        {'objects': questions, 'profile': profile}
     )
 
 
 def hot(request):
     questions_list = Question.objects.get_hot()
     questions, paginator = paginate(questions_list, request)
+    profile = Profile.objects.get_authenticated(request.user)
 
     return render(
         request,
         'index.html',
-        {'objects': questions, 'profile': current_profile(request.user)},
+        {'objects': questions, 'profile': profile},
     )
 
 
@@ -109,11 +106,12 @@ def ask(request):
             return redirect(q.get_absolute_url())
     else:
         form = QuestionForm()
+    profile = Profile.objects.get_authenticated(request.user)
 
     return render(
         request,
         'ask.html',
-        {'form': form, 'profile': current_profile(request.user)}
+        {'form': form, 'profile': profile}
     )
 
 
@@ -126,10 +124,12 @@ def settings(request):
             return redirect('settings')
     else:
         form = EditForm()
+    profile = Profile.objects.get_authenticated(request.user)
+
     return render(
         request,
         'settings.html',
-        {'form': form, 'profile': current_profile(request.user)}
+        {'form': form, 'profile': profile}
     )
 
 
@@ -146,23 +146,26 @@ def question(request, id):
             return redirect(redirect_to)
 
     form = AnswerForm()
+    profile = Profile.objects.get_authenticated(request.user)
+
     return render(request, 'question.html', {
         'objects': answers,
         'question': question,
         'form': form,
-        'profile': current_profile(request.user)
+        'profile': profile
     })
 
 
 def tag(request, tag):
     questions_list = Question.objects.get_tag(tag)
     questions, paginator = paginate(questions_list, request)
+    profile = Profile.objects.get_authenticated(request.user)
 
     return render(
         request,
         'tagsearch.html',
         {'objects': questions, 'tag': tag,
-         'profile': current_profile(request.user)}
+         'profile': profile}
     )
 
 

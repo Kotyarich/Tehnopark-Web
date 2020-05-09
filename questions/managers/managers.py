@@ -3,9 +3,7 @@ from datetime import timedelta, datetime
 
 from django.db import models as django_models
 from django.db.models import Count, Q
-from django.contrib.postgres.search import SearchQuery, SearchVector, SearchRank
-
-from questions import models
+from django.contrib.postgres.search import SearchQuery, SearchVector
 
 
 class FulltextSearchManager(django_models.Manager, ABC):
@@ -26,9 +24,7 @@ class FulltextSearchManager(django_models.Manager, ABC):
             else:
                 result_vector += vector
 
-        rank = SearchRank(result_vector, search_query)
-        ranked_result = pg_manager.annotate(rank=rank).order_by('-rank')
-        return ranked_result.select_related('question')
+        return pg_manager.most_similar(result_vector, search_query)
 
     def __common_search(self, query, fields):
         query_sets = []
@@ -58,7 +54,8 @@ class QuestionManager(FulltextSearchManager):
 
     def search(self, query):
         fields = (('title', 'A'), ('text', 'C'))
-        return self._base_search(query, fields, models.PgQuestionSearch.objects)
+        pg_manager = self.model.pg_question.get_queryset().model.objects
+        return self._base_search(query, fields, pg_manager)
 
     def like(self, profile, value, pk):
         question = self.get(pk=pk)
@@ -90,3 +87,10 @@ class TagManager(django_models.Manager):
         return self.annotate(num_questions=Count(
             'questions', filter=Q(questions__created_at=three_months_ago))
         ).order_by('-num_questions')
+
+
+class ProfileManager(django_models.Manager):
+    def get_authenticated(self, user):
+        if user.is_authenticated:
+            return self.get(user=user)
+        return None
