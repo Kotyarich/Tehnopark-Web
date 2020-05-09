@@ -60,11 +60,10 @@ class QuestionManager(FulltextSearchManager):
         fields = (('title', 'A'), ('text', 'C'))
         return self._base_search(query, fields, models.PgQuestionSearch.objects)
 
-    def like(self, user, value, pk):
-        profile = models.Profile.objects.get(user=user)
+    def like(self, profile, value, pk):
         question = self.get(pk=pk)
         try:
-            like = question.likes.get(user=user)
+            like = question.likes.get(user=profile.user)
             if like.value != value:
                 profile.rating += value * 2
                 question.rating += value * 2
@@ -72,8 +71,10 @@ class QuestionManager(FulltextSearchManager):
                 like.save()
                 question.save()
                 profile.save()
-        except models.Like.DoesNotExist:
-            like = models.Like(value=value, user=user, content_object=question)
+        except question.likes.model.DoesNotExist:
+            likes_manager = question.likes.model.objects
+            like = likes_manager.create(value=value, user=profile.user,
+                                        content_object=question)
             like.save()
             profile.rating += value
             question.rating += value
