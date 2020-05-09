@@ -57,28 +57,6 @@ class QuestionManager(FulltextSearchManager):
         pg_manager = self.model.pg_question.get_queryset().model.objects
         return self._base_search(query, fields, pg_manager)
 
-    def like(self, profile, value, pk):
-        question = self.get(pk=pk)
-        try:
-            like = question.likes.get(user=profile.user)
-            if like.value != value:
-                profile.rating += value * 2
-                question.rating += value * 2
-                like.value = value
-                like.save()
-                question.save()
-                profile.save()
-        except question.likes.model.DoesNotExist:
-            likes_manager = question.likes.model.objects
-            like = likes_manager.create(value=value, user=profile.user,
-                                        content_object=question)
-            like.save()
-            profile.rating += value
-            question.rating += value
-            profile.save()
-            question.save()
-        return question.rating
-
 
 class TagManager(django_models.Manager):
     def most_popular(self):
@@ -94,3 +72,28 @@ class ProfileManager(django_models.Manager):
         if user.is_authenticated:
             return self.get(user=user)
         return None
+
+
+class LikeManager(django_models.Manager):
+    def like(self, profile, value, content_object):
+        try:
+            like = self.get(user=profile.user, object_id=content_object.id)
+            if like.value != value:
+                add_value = value * 2
+                like.value = value
+                like.save()
+            else:
+                add_value = 0
+        except self.model.DoesNotExist:
+            like = self.create(value=value, user=profile.user,
+                               content_object=content_object)
+            add_value = value
+            like.save()
+
+        author_profile = content_object.author.user
+        author_profile.rating += add_value
+        content_object.rating += add_value
+        author_profile.save()
+        content_object.save()
+
+        return content_object.rating

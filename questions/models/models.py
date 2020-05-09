@@ -5,7 +5,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.shortcuts import reverse
 
-from questions.managers import QuestionManager, TagManager, ProfileManager
+from questions.managers import QuestionManager, TagManager, ProfileManager, \
+    LikeManager
 
 
 class Profile(models.Model):
@@ -15,7 +16,7 @@ class Profile(models.Model):
     nickname = models.CharField(max_length=100, unique=True)
     rating = models.IntegerField(default=0)
 
-    object = ProfileManager()
+    objects = ProfileManager()
 
 
 class Like(models.Model):
@@ -30,6 +31,8 @@ class Like(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
+
+    objects = LikeManager()
 
 
 class Question(models.Model):

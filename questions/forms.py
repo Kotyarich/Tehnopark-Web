@@ -58,7 +58,8 @@ class RegisterForm(forms.Form):
     def clean_nickname(self):
         nickname = self.cleaned_data.get('nickname', '')
         if len(nickname) > 30:
-            raise forms.ValidationError('Nickname is to be less than 30 symbols')
+            raise forms.ValidationError(
+                'Nickname is to be less than 30 symbols')
         if len(nickname) < 6:
             raise forms.ValidationError('Nickname is to be more than 5 symbols')
         try:
@@ -125,7 +126,8 @@ class EditForm(forms.Form):
         if nickname == '':
             return nickname
         if len(nickname) > 30:
-            raise forms.ValidationError('Nickname is to be less than 30 symbols')
+            raise forms.ValidationError(
+                'Nickname is to be less than 30 symbols')
         if len(nickname) < 6:
             raise forms.ValidationError('Nickname is to be more than 5 symbols')
         try:
@@ -231,4 +233,3 @@ class AnswerForm(forms.Form):
             question=question
         )
         answer.save()
-

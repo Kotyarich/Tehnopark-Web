@@ -30,7 +30,8 @@ def like(request):
         value = int(request.POST.get('value'))
         pk = request.POST.get('pk')
         profile = Profile.objects.get_authenticated(request.user)
-        rating = Question.objects.like(profile, value, pk)
+        q = Question.objects.get(id=pk)
+        rating = Like.objects.like(profile, value, q)
         response_data = {'result': rating}
         return HttpResponse(
             json.dumps(response_data),
