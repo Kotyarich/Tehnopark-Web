@@ -7,6 +7,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from faker import Faker
 
 from questions.forms import *
+from questions.models import Like
 
 fake = Faker()
 

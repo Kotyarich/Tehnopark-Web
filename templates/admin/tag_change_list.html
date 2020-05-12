@@ -1,0 +1,67 @@
+{% extends "admin/change_list.html" %}
+
+{% load humanize %}
+{% load filters %}
+
+{% block content_title %}
+    <h1> Tags Summary </h1>
+{% endblock %}
+
+{% block result_list %}
+
+    <div class="results">
+        <table>
+            <thead>
+            <tr>
+                <th>
+                    <div class="text">
+                        <a href="#">Name</a>
+                    </div>
+                </th>
+                <th>
+                    <div class="text">
+                        <a href="#">Questions</a>
+                    </div>
+                </th>
+                <th>
+                    <div class="text">
+                        <a href="#">Answers</a>
+                    </div>
+                </th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for row in summary %}
+                <tr class="{% cycle 'row1' 'row2' %}">
+                    <td> {{ row.text }}</td>
+                    <td> {{ row.questions | intcomma }}</td>
+                    <td> {{ row.answers }}</td>
+                </tr>
+            {% endfor %}
+
+            <tr style="font-weight:bold; border-top:2px solid #DDDDDD;">
+                <td> Total</td>
+                <td> {{ summary_total.questions | intcomma }} </td>
+                <td> {{ summary_total.answers }}</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="results">
+        <div class="bar-chart">
+        {% for x in summary_over_time %}
+            <div class="bar" style="height:{{x.pct}}%">
+                <div class="bar-tooltip">
+                    {{x.total | default:0 | intcomma }}<br>
+                    {{x.period | date:"d/m/Y"}}
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    </div>
+    </div>
+
+{% endblock %}
+
+{% block paginatin %}{% endblock %}
