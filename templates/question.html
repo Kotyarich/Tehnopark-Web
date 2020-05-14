@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block registered_userpanel %}
+    {% if user.is_authenticated %}
+        {% include "registered_panel.html" %}
+    {% else %}
+        {% include "unregistered_panel.html" %}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <div class="media my-4">
+        <div>
+            <img class="mr-3" src="{{ question.get_user.avatar.url }}"
+                 width="75" height="75" alt="Generic placeholder image">
+            <div class="rating mt-2 mr-3">
+                <button type="button" class="btn btn-block btn-outline-dark"
+                        disabled>{{ question.rating }}</button>
+                <div class="mt-1">
+                    <button type="button" class="btn btn-primary brown">+
+                    </button>
+                    <button type="button" class="btn btn-primary brown">-
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="media-body">
+            <h3 class="mt-0 mb-1">{{ question.title }}</h3>
+            <p>{{ question.text }}</p>
+            Tags:
+            {% for tag in question.tags.all %}
+                <a href="{{ tag.get_absolute_url }}">{{ tag.text }}</a>
+            {% endfor %}
+        </div>
+    </div>
+    <hr>
+    {% include "answers_list.html" %}
+    {% if user.is_authenticated %}
+        <form id="form" method="POST" novalidate>
+            {% include "form.html" %}
+            <button type="submit" class="btn btn-success"><b>Answer</b></button>
+        </form>
+    {% endif %}
+{% endblock %}
