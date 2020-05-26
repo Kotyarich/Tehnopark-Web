@@ -54,6 +54,9 @@ class Question(models.Model):
     def get_user(self):
         return Profile.objects.get(user=self.author)
 
+    def get_answers(self):
+        return self.question.all().order_by('created_at')
+
 
 class Tag(models.Model):
     text = models.SlugField(unique=True)

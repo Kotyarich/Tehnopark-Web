@@ -50,7 +50,7 @@ class QuestionManager(FulltextSearchManager):
         return self.order_by('-created_at')
 
     def get_tag(self, tag):
-        return self.filter(tags__text=tag)
+        return self.filter(tags__text=tag).order_by('-rating')
 
     def search(self, query):
         fields = (('title', 'A'), ('text', 'C'))

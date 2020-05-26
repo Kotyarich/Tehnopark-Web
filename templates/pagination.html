@@ -1,31 +1,31 @@
-{% if objects.paginator.count > 0 %}
+{% if paginator.count > 0 %}
 <nav class="pag" aria-label="Page navigation">
     <ul class="pagination brown">
-        {% if objects.has_previous %}
-            <li class="page-item"><a class="page-link brown" href="?page={{ objects.previous_page_number }}">Previous</a></li>
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link brown" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
             <li class="page-item"><a class="page-link brown" href="?page=1">1</a></li>
         {% else %}
             <li class="disabled page-item"><a class="page-link brown" href="#">Previous</a></li>
         {% endif %}
 
-        {% if objects.number > 3 %}
+        {% if page_obj.number > 3 %}
             <li class="page-item"><a class="page-link brown" href="?page=1">...</a></li>
         {% endif %}
 
-        {% if objects.number > 2 %}
-            <li class="page-item"><a class="page-link brown" href="?page={{ objects.previous_page_number }}">{{ objects.previous_page_number }}</a></li>
+        {% if page_obj.number > 2 %}
+            <li class="page-item"><a class="page-link brown" href="?page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a></li>
         {% endif %}
 
-        <li class="page-item"><a class="page-link brown" href="?page={{ objects.number }}">{{ objects.number }}</a></li>
+        <li class="page-item"><a class="page-link brown" href="?page={{ page_obj.number }}">{{ page_obj.number }}</a></li>
 
-        {% if objects.next_page_number < objects.paginator.num_pages %}
-            <li class="page-item"><a class="page-link brown" href="?page={{ objects.next_page_number }}">{{ objects.next_page_number }}</a></li>
-            <li class="page-item"><a class="page-link brown" href="?page={{ objects.paginator.num_pages }}">...</a></li>
+        {% if page_obj.next_page_number < paginator.num_pages %}
+            <li class="page-item"><a class="page-link brown" href="?page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a></li>
+            <li class="page-item"><a class="page-link brown" href="?page={{ paginator.num_pages }}">...</a></li>
         {% endif %}
 
-        {% if objects.has_next %}
-            <li class="page-item"><a class="page-link brown" href="?page={{ objects.paginator.num_pages }}">{{ objects.paginator.num_pages }}</a></li>
-            <li class="page-item"><a class="page-link brown" href="?page={{ objects.next_page_number }}">Next</a></li>
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link brown" href="?page={{ paginator.num_pages }}">{{ paginator.num_pages }}</a></li>
+            <li class="page-item"><a class="page-link brown" href="?page={{ page_obj.next_page_number }}">Next</a></li>
         {% else %}
             <li class="disabled page-item"><a class="page-link brown" href="#">Next</a></li>
         {% endif %}
