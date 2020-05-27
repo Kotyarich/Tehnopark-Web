@@ -1,8 +1,12 @@
+import logging
+
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
 from channels.layers import get_channel_layer
 
 from questions.models import Profile
+
+logger = logging.getLogger(__name__)
 
 
 class NotificationConsumer(JsonWebsocketConsumer):
@@ -12,7 +16,7 @@ class NotificationConsumer(JsonWebsocketConsumer):
         """
         try:
             if not self.scope['user'].is_authenticated:
-                # TODO logger.error('User in not authenticated')
+                logger.error('User in not authenticated')
                 self.close()
 
             user = Profile.objects.get_authenticated(self.scope['user'])
@@ -25,7 +29,7 @@ class NotificationConsumer(JsonWebsocketConsumer):
 
             self.accept()
         except Exception as e:
-            # TODO logger.error(e)
+            logger.error(e)
             self.close()
 
     def liked(self, event):
@@ -43,8 +47,8 @@ class NotificationConsumer(JsonWebsocketConsumer):
         Leave all the rooms we are still in.
         """
         try:
-            if not self.scope['user'].is_aunthenticated:
-                # TODO logger.error('User in not authenticated')
+            if not self.scope['user'].is_authenticated:
+                logger.error('User in not authenticated')
                 self.close()
 
             user = Profile.objects.get(user=self.scope['user'])
@@ -52,7 +56,7 @@ class NotificationConsumer(JsonWebsocketConsumer):
 
             self.channel_layer.group_discard(group_name, self.channel_name)
         except Exception as e:
-            # TODO logger.error(e)
+            logger.error(e)
             pass
 
 

@@ -1,6 +1,10 @@
+import logging
+
 from django import forms
 from django.contrib import auth
 from questions.models import Question, Tag, Answer, User, Profile
+
+logger = logging.getLogger(__name__)
 
 
 class LoginForm(forms.Form):
@@ -24,7 +28,8 @@ class LoginForm(forms.Form):
             password=cdata['password']
         )
         if user is None:
-            raise forms.ValidationError("Wrong username or password")
+            logger.debug('Wrong username or password')
+            raise forms.ValidationError('Wrong username or password')
         auth.login(self.request, user)
 
 
@@ -55,6 +60,7 @@ class RegisterForm(forms.Form):
         if avatar is None:
             return None
         if 'image' not in avatar.content_type:
+            logger.debug('Invalid file type')
             raise forms.ValidationError('Invalid file type')
         return avatar
 
@@ -63,9 +69,11 @@ class RegisterForm(forms.Form):
         if email == "":
             return email
         if email.find('@') < 1 or len(email) < 3:
+            logger.debug('Invalid email')
             raise forms.ValidationError('Invalid email')
         try:
             _ = User.objects.get(email=email)
+            logger.debug('User already exists')
             raise forms.ValidationError('User with the same email is exist')
         except User.DoesNotExist:
             return email
@@ -73,12 +81,15 @@ class RegisterForm(forms.Form):
     def clean_nickname(self):
         nickname = self.cleaned_data.get('nickname', '')
         if len(nickname) > 30:
+            logger.debug('Too long nickname')
             raise forms.ValidationError(
                 'Nickname is to be less than 30 symbols')
         if len(nickname) < 6:
+            logger.debug('Too short nickname')
             raise forms.ValidationError('Nickname is to be more than 5 symbols')
         try:
             _ = User.objects.get(username=nickname)
+            logger.debug('User already exists')
             raise forms.ValidationError('User with the same nickname is exist')
         except User.DoesNotExist:
             return nickname
@@ -97,6 +108,7 @@ class RegisterForm(forms.Form):
         return repeat_password
 
     def save(self, request):
+        logger.info('Creating new user')
         cdata = self.cleaned_data
         user = User.objects.create_user(
             cdata['nickname'],
@@ -172,6 +184,7 @@ class EditForm(forms.Form):
         return cleaned_data
 
     def save(self, request):
+        logger.info('Updating user')
         cdata = self.cleaned_data
         user = auth.get_user(request)
         profile = Profile.objects.get(user=user)
@@ -221,6 +234,7 @@ class QuestionForm(forms.Form):
         return tags
 
     def save(self, user):
+        logger.info('Creating new question')
         data = self.cleaned_data
         question = Question.objects.create(
             title=data['title'],
@@ -249,6 +263,7 @@ class AnswerForm(forms.Form):
         return text
 
     def save(self, user, question):
+        logger.info('Creating new answer')
         answer = Answer.objects.create(
             text=self.data['text'],
             author=user,

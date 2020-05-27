@@ -1,9 +1,12 @@
+import logging
 from abc import ABC
 from datetime import timedelta, datetime
 
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.db import models as django_models
 from django.db.models import Count, Q
+
+logger = logging.getLogger(__name__)
 
 
 class FulltextSearchManager(django_models.Manager, ABC):
@@ -71,6 +74,7 @@ class ProfileManager(django_models.Manager):
     def get_authenticated(self, user):
         if user.is_authenticated:
             return self.get(user=user)
+        logger.info('User id={} is not authenticated'.format(user.id))
         return None
 
 
@@ -82,6 +86,7 @@ class LikeManager(django_models.Manager):
                 add_value = value * 2
                 like.value = value
                 like.save()
+                logger.info('Like id={} updated'.format(like.id))
             else:
                 add_value = 0
         except self.model.DoesNotExist:
@@ -89,6 +94,7 @@ class LikeManager(django_models.Manager):
                                content_object=content_object)
             add_value = value
             like.save()
+            logger.info('Like id={} created'.format(like.id))
 
         author_profile = content_object.author.user
 
