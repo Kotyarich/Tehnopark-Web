@@ -9,7 +9,7 @@ from django.views.generic.base import ContextMixin, RedirectView, View
 from django.views.generic.detail import SingleObjectMixin
 
 from questions.forms import *
-from questions.models import Like
+from questions.usecases import LikeQuestion
 
 
 class ProfileMixin(ContextMixin):
@@ -111,11 +111,10 @@ class LikeView(LoginRequiredMixin, View):
     def post(request):
         value = int(request.POST.get('value'))
         pk = request.POST.get('pk')
-        profile = Profile.objects.get_authenticated(request.user)
-        q = Question.objects.get(id=pk)
-        rating = Like.objects.like(profile, value, q)
 
-        response_data = {'result': rating}
+        use_case = LikeQuestion(request.user, value, pk)
+        response_data = use_case.run_use_case()
+
         return HttpResponse(
             json.dumps(response_data),
             content_type='application/json'

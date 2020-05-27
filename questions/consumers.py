@@ -1,5 +1,6 @@
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
+from channels.layers import get_channel_layer
 
 from questions.models import Profile
 
@@ -53,3 +54,18 @@ class NotificationConsumer(JsonWebsocketConsumer):
         except Exception as e:
             # TODO logger.error(e)
             pass
+
+
+class NotificationSender:
+    _event_type = 'liked'
+
+    @classmethod
+    def notify_question_liked(cls, user, value, question):
+        profile = user.user
+
+        async_to_sync(get_channel_layer().group_send)(profile.group_name, {
+            'type': cls._event_type,
+            'user': profile.nickname,
+            'value': value,
+            'question': question.title
+        })

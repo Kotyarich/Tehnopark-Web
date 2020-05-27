@@ -2,7 +2,6 @@ $(document).ready(function () {
     const webSocket = new WebSocket('ws://' + window.location.host + '/nf/');
     webSocket.onmessage = (message) => {
         const data = JSON.parse(message.data);
-        console.log(data);
 
         $('.toasts-container').append(
             `<div class="toast fade show" role="alert" aria-live="assertive" aria-atomic="true">
@@ -40,7 +39,7 @@ $(document).ready(function () {
             }, // data sent with the post request
             // handle a successful response
             success: function (json) {
-                document.getElementById(id).innerHTML = json.result;
+                document.getElementById(id).innerHTML = json.rating;
             },
             // handle a non-successful response
             error: function (xhr) {
