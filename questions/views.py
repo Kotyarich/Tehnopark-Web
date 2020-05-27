@@ -114,6 +114,7 @@ class LikeView(LoginRequiredMixin, View):
         profile = Profile.objects.get_authenticated(request.user)
         q = Question.objects.get(id=pk)
         rating = Like.objects.like(profile, value, q)
+
         response_data = {'result': rating}
         return HttpResponse(
             json.dumps(response_data),

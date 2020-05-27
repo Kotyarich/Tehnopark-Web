@@ -1,6 +1,8 @@
 from abc import ABC
 from datetime import timedelta, datetime
 
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.db import models as django_models
 from django.db.models import Count, Q
 from django.contrib.postgres.search import SearchQuery, SearchVector
@@ -91,9 +93,17 @@ class LikeManager(django_models.Manager):
             like.save()
 
         author_profile = content_object.author.user
-        author_profile.rating += add_value
-        content_object.rating += add_value
-        author_profile.save()
-        content_object.save()
+
+        if add_value != 0:
+            author_profile.update_rating(add_value)
+            content_object.update_rating(add_value)
+
+            async_to_sync(get_channel_layer().group_send)(
+                author_profile.group_name,
+                {'type': 'liked',
+                 'user': profile.nickname,
+                 'value': value,
+                 'question': content_object.title}
+            )
 
         return content_object.rating

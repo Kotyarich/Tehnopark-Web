@@ -1,9 +1,29 @@
 $(document).ready(function () {
+    const webSocket = new WebSocket('ws://' + window.location.host + '/nf/');
+    webSocket.onmessage = (message) => {
+        const data = JSON.parse(message.data);
+        console.log(data);
+
+        $('.toasts-container').append(
+            `<div class="toast fade show" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <strong class="mr-auto">You got ${data.value === 1? 'like': 'dislike'} to question</strong>
+                    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="toast-body">
+                    User ${data.user} to "${data.question}"
+                </div>
+            </div>`
+        );
+        $('.toast').toast();
+    };
+
 
     $('.like').click(function (event) {
         let val;
         event.preventDefault();
-        console.log("form submitted!");
         const id = $(this).val();
         if (this.getAttribute('add') === 'true') {
             val = 1;
@@ -20,7 +40,6 @@ $(document).ready(function () {
             }, // data sent with the post request
             // handle a successful response
             success: function (json) {
-                console.log("success"); // another sanity check
                 document.getElementById(id).innerHTML = json.result;
             },
             // handle a non-successful response

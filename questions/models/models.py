@@ -18,6 +18,14 @@ class Profile(models.Model):
 
     objects = ProfileManager()
 
+    @property
+    def group_name(self):
+        return 'user_{}'.format(self.id)
+
+    def update_rating(self, add_value):
+        self.rating += add_value
+        self.save()
+
 
 class Like(models.Model):
     VALUES = (
@@ -56,6 +64,10 @@ class Question(models.Model):
 
     def get_answers(self):
         return self.question.all().order_by('created_at')
+
+    def update_rating(self, add_value):
+        self.rating += add_value
+        self.save()
 
 
 class Tag(models.Model):
