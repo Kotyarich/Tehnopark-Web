@@ -12,6 +12,21 @@ class LoginForm(forms.Form):
         widget=forms.PasswordInput()
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        self.request = kwargs.pop('request', None)
+        super(LoginForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        cdata = self.cleaned_data
+        user = auth.authenticate(
+            username=cdata['username'],
+            password=cdata['password']
+        )
+        if user is None:
+            raise forms.ValidationError("Wrong username or password")
+        auth.login(self.request, user)
+
 
 class RegisterForm(forms.Form):
     email = forms.EmailField(
@@ -136,20 +151,27 @@ class EditForm(forms.Form):
         except User.DoesNotExist:
             return nickname
 
+    def clean_avatar(self):
+        avatar = self.cleaned_data.get('avatar', None)
+        if avatar is not None and 'image' not in avatar.content_type:
+            raise forms.ValidationError('Invalid type of file')
+        return avatar
+
     def clean(self):
         cleaned_data = super().clean()
+        if not self.is_valid():
+            return cleaned_data
+
         if cleaned_data['email'] == '' and cleaned_data['nickname'] == '' \
-                and cleaned_data['avatar'] is None:
+                and cleaned_data['avatar'] is not None:
             msg = 'You need to feel at least one field'
             self.add_error('nickname', msg)
             self.add_error('email', msg)
             raise forms.ValidationError(msg, code='empty')
-        if 'image' not in cleaned_data['avatar'].content_type:
-            self.add_error('avatar', "Invalid type of file")
+
         return cleaned_data
 
     def save(self, request):
-        self.clean()
         cdata = self.cleaned_data
         user = auth.get_user(request)
         profile = Profile.objects.get(user=user)
@@ -158,7 +180,7 @@ class EditForm(forms.Form):
             profile.nickname = cdata['nickname']
         if 'email' in cdata and cdata['email'] != '':
             user.email = cdata['email']
-        if 'avatar' in cdata:
+        if 'avatar' in cdata and cdata['avatar'] is not None:
             profile.avatar = request.FILES['avatar']
         profile.save()
         user.save()

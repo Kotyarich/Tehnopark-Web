@@ -22,15 +22,15 @@ from questions import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.index, name='new_questions'),
-    path('hot/', views.hot, name='hot'),
-    path('login/', views.login, name='login'),
-    path('logout/', views.logout, name='logout'),
-    path('signup/', views.register, name='signup'),
-    path('ask/', views.ask, name='ask'),
-    path('settings/', views.settings, name='settings'),
-    path('question/<int:id>/', views.question, name='question'),
-    path('tag/<str:tag>', views.tag, name='tag'),
-    path('like/', views.like, name='like'),
-    path('search/', views.search, name='search')
+    path('', views.QuestionsList.as_view(), name='new_questions'),
+    path('hot/', views.HotQuestionsList.as_view(), name='hot'),
+    path('login/', views.LoginView.as_view(), name='login'),
+    path('logout/', views.LogoutView.as_view(), name='logout'),
+    path('signup/', views.RegisterView.as_view(), name='signup'),
+    path('ask/', views.AskView.as_view(), name='ask'),
+    path('settings/', views.SettingsView.as_view(), name='settings'),
+    path('question/<int:id>/', views.QuestionView.as_view(), name='question'),
+    path('tag/<str:tag>', views.TaggedQuestionsList.as_view(), name='tag'),
+    path('like/', views.LikeView.as_view(), name='like'),
+    path('search/', views.SearchView.as_view(), name='search')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

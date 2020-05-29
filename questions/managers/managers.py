@@ -1,9 +1,9 @@
 from abc import ABC
 from datetime import timedelta, datetime
 
+from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.db import models as django_models
 from django.db.models import Count, Q
-from django.contrib.postgres.search import SearchQuery, SearchVector
 
 
 class FulltextSearchManager(django_models.Manager, ABC):
@@ -50,7 +50,7 @@ class QuestionManager(FulltextSearchManager):
         return self.order_by('-created_at')
 
     def get_tag(self, tag):
-        return self.filter(tags__text=tag)
+        return self.filter(tags__text=tag).order_by('-rating')
 
     def search(self, query):
         fields = (('title', 'A'), ('text', 'C'))
@@ -91,9 +91,9 @@ class LikeManager(django_models.Manager):
             like.save()
 
         author_profile = content_object.author.user
-        author_profile.rating += add_value
-        content_object.rating += add_value
-        author_profile.save()
-        content_object.save()
 
-        return content_object.rating
+        if add_value != 0:
+            author_profile.update_rating(add_value)
+            content_object.update_rating(add_value)
+
+        return like
