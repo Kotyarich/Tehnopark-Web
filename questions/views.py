@@ -1,182 +1,189 @@
 import json
+import math
 
-from django.contrib.auth.decorators import login_required
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import HttpResponse
-from django.shortcuts import render, get_object_or_404, redirect
-from faker import Faker
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse, HttpResponseForbidden
+from django.shortcuts import get_object_or_404
+from django.views.generic import ListView, FormView
+from django.views.generic.base import ContextMixin, RedirectView, View
+from django.views.generic.detail import SingleObjectMixin
 
 from questions.forms import *
-
-fake = Faker()
-
-
-def paginate(objects_list, request):
-    paginator = Paginator(objects_list, 10)
-    page = request.GET.get('page')
-    try:
-        objects_page = paginator.page(page)
-    except PageNotAnInteger:
-        objects_page = paginator.page(1)
-    except EmptyPage:
-        objects_page = paginator.page(paginator.num_pages)
-
-    return objects_page, paginator
+from questions.usecases import LikeQuestion
 
 
-@login_required(login_url='login', redirect_field_name='redirect_to')
-def like(request):
-    if request.method == 'POST':
+class ProfileMixin(ContextMixin):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        profile = Profile.objects.get_authenticated(self.request.user)
+        context['profile'] = profile
+        return context
+
+
+class QuestionsList(ProfileMixin, ListView):
+    template_name = 'index.html'
+    context_object_name = 'objects'
+    paginate_by = 10
+    queryset = Question.objects.get_new()
+
+
+class HotQuestionsList(QuestionsList):
+    queryset = Question.objects.get_hot()
+
+
+class TaggedQuestionsList(QuestionsList):
+    template_name = 'tagsearch.html'
+
+    def get_queryset(self):
+        chosen_tag = self.kwargs['tag']
+        return Question.objects.get_tag(chosen_tag)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['tag'] = self.kwargs['tag']
+        return context
+
+
+class LoginView(FormView):
+    template_name = 'login.html'
+    form_class = LoginForm
+
+    def get_success_url(self):
+        return self.request.GET.get('redirect_to')
+
+    def get_form_kwargs(self):
+        kwargs = super(LoginView, self).get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+
+
+class LogoutView(RedirectView):
+    permanent = False
+    query_string = True
+
+    def get_redirect_url(self, *args, **kwargs):
+        auth.logout(self.request)
+        return self.request.GET.get('redirect_to')
+
+
+class RegisterView(FormView):
+    template_name = 'register.html'
+    form_class = RegisterForm
+    success_url = '/'
+
+    def form_valid(self, form):
+        form.save(self.request)
+        return super(RegisterView, self).form_valid(form)
+
+
+class AskView(LoginRequiredMixin, ProfileMixin, FormView):
+    template_name = 'ask.html'
+    form_class = QuestionForm
+    login_url = 'login'
+    redirect_field_name = 'redirect_to'
+    question = None
+
+    def get_success_url(self):
+        return self.question.get_absolute_url()
+
+    def form_valid(self, form):
+        self.question = form.save(self.request.user)
+        return super(AskView, self).form_valid(form)
+
+
+class SettingsView(LoginRequiredMixin, ProfileMixin, FormView):
+    template_name = 'settings.html'
+    form_class = EditForm
+    success_url = '/settings/'
+    login_url = 'login'
+    redirect_field_name = 'redirect_to'
+
+    def form_valid(self, form):
+        form.save(self.request)
+        return super(SettingsView, self).form_valid(form)
+
+
+class LikeView(LoginRequiredMixin, View):
+    login_url = 'login'
+    redirect_field_name = 'redirect_to'
+
+    @staticmethod
+    def post(request):
         value = int(request.POST.get('value'))
         pk = request.POST.get('pk')
-        profile = Profile.objects.get_authenticated(request.user)
-        q = Question.objects.get(id=pk)
-        rating = Like.objects.like(profile, value, q)
-        response_data = {'result': rating}
+
+        use_case = LikeQuestion(request.user, value, pk)
+        response_data = use_case.run_use_case()
+
         return HttpResponse(
             json.dumps(response_data),
             content_type='application/json'
         )
 
 
-def index(request):
-    questions_list = Question.objects.get_new()
-    questions, paginator = paginate(questions_list, request)
-    profile = Profile.objects.get_authenticated(request.user)
+class QuestionDisplay(ProfileMixin, SingleObjectMixin, ListView):
+    paginate_by = 10
+    template_name = 'question.html'
+    object = None
 
-    return render(
-        request,
-        'index.html',
-        {'objects': questions, 'profile': profile}
-    )
+    def get(self, request, *args, **kwargs):
+        self.object = get_object_or_404(Question, pk=self.kwargs['id'])
+        return super().get(request, *args, **kwargs)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['objects'] = context.pop('object_list')
+        context['question'] = self.object
+        context['form'] = AnswerForm()
+        return context
 
-def hot(request):
-    questions_list = Question.objects.get_hot()
-    questions, paginator = paginate(questions_list, request)
-    profile = Profile.objects.get_authenticated(request.user)
-
-    return render(
-        request,
-        'index.html',
-        {'objects': questions, 'profile': profile},
-    )
+    def get_queryset(self):
+        return self.object.get_answers()
 
 
-def login(request):
-    if request.POST:
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            cdata = form.cleaned_data
-            user = auth.authenticate(
-                username=cdata['username'],
-                password=cdata['password']
-            )
-            if user is not None:
-                auth.login(request, user)
-                return redirect(request.GET.get('redirect_to'))
-            form.add_error('username', "Wrong username or password")
-    else:
-        form = LoginForm()
+class QuestionsAnswer(SingleObjectMixin, FormView):
+    template_name = 'question.html'
+    form_class = AnswerForm
+    object = None
+    pagesCount = None
 
-    return render(request, 'login.html', {'form': form})
+    def form_valid(self, form):
+        form.save(self.request.user, self.object)
+        return super(QuestionsAnswer, self).form_valid(form)
 
+    def post(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return HttpResponseForbidden()
+        self.object = get_object_or_404(Question, pk=self.kwargs['id'])
+        self.pagesCount = math.ceil(self.object.question.all().count() / 10)
+        return super().post(request, *args, **kwargs)
 
-def logout(request):
-    auth.logout(request)
-    return redirect(request.GET.get('redirect_to'))
+    def get_success_url(self):
+        args = '?page={}#form'.format(self.pagesCount)
+        return self.object.get_absolute_url() + args
 
 
-def register(request):
-    if request.POST:
-        form = RegisterForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save(request)
-            return redirect('new_questions')
-    else:
-        form = RegisterForm()
-    return render(request, 'register.html', {'form': form})
+class QuestionView(View):
+    @staticmethod
+    def get(request, *args, **kwargs):
+        view = QuestionDisplay.as_view()
+        return view(request, *args, **kwargs)
+
+    @staticmethod
+    def post(request, *args, **kwargs):
+        view = QuestionsAnswer.as_view()
+        return view(request, *args, **kwargs)
 
 
-@login_required(login_url='login', redirect_field_name='redirect_to')
-def ask(request):
-    if request.POST:
-        form = QuestionForm(request.POST)
-        if form.is_valid():
-            q = form.save(request.user)
-            return redirect(q.get_absolute_url())
-    else:
-        form = QuestionForm()
-    profile = Profile.objects.get_authenticated(request.user)
+class SearchView(View):
+    @staticmethod
+    def get(request):
+        query = request.GET.get('query')
+        ranked_top = Question.objects.search(query)[:5]
+        results = [{'id': x.question.pk, 'title': x.question.title} for x in
+                   ranked_top]
 
-    return render(
-        request,
-        'ask.html',
-        {'form': form, 'profile': profile}
-    )
-
-
-@login_required(login_url='login', redirect_field_name='redirect_to')
-def settings(request):
-    if request.POST:
-        form = EditForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save(request)
-            return redirect('settings')
-    else:
-        form = EditForm()
-    profile = Profile.objects.get_authenticated(request.user)
-
-    return render(
-        request,
-        'settings.html',
-        {'form': form, 'profile': profile}
-    )
-
-
-def question(request, id):
-    question = get_object_or_404(Question, pk=id)
-    answers_list = Answer.objects.filter(question=question)
-    answers, paginator = paginate(answers_list, request)
-    if request.POST:
-        form = AnswerForm(request.POST)
-        if form.is_valid():
-            form.save(request.user, question)
-            redirect_to = question.get_absolute_url() \
-                          + '?page={}#form'.format(paginator.num_pages)
-            return redirect(redirect_to)
-
-    form = AnswerForm()
-    profile = Profile.objects.get_authenticated(request.user)
-
-    return render(request, 'question.html', {
-        'objects': answers,
-        'question': question,
-        'form': form,
-        'profile': profile
-    })
-
-
-def tag(request, tag):
-    questions_list = Question.objects.get_tag(tag)
-    questions, paginator = paginate(questions_list, request)
-    profile = Profile.objects.get_authenticated(request.user)
-
-    return render(
-        request,
-        'tagsearch.html',
-        {'objects': questions, 'tag': tag,
-         'profile': profile}
-    )
-
-
-def search(request):
-    query = request.GET.get('query')
-    ranked_top = Question.objects.search(query)[:5]
-    results = [{'id': x.question.pk, 'title': x.question.title} for x in
-               ranked_top]
-
-    return HttpResponse(
-        json.dumps({'results': results}),
-        content_type='application/json',
-    )
+        return HttpResponse(
+            json.dumps({'results': results}),
+            content_type='application/json',
+        )
