@@ -142,7 +142,6 @@ CHANNEL_LAYERS = {
 
 ASGI_APPLICATION = 'questions.routing.channel_routing'
 
-
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,

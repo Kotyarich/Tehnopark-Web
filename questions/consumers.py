@@ -57,7 +57,6 @@ class NotificationConsumer(JsonWebsocketConsumer):
             self.channel_layer.group_discard(group_name, self.channel_name)
         except Exception as e:
             logger.error(e)
-            pass
 
 
 class NotificationSender:
