@@ -45,21 +45,18 @@
                 <div class="tags mt-5">
                     <h4><b>Popular tags</b></h4>
                     <h5>
-                        <a href="#">Perl</a>
-                        <a href="#">Python</a>
-                        <a href="#">TechnoPark</a>
-                        <a href="#">MySQL</a>
-                        <a href="#">Mail.ru</a>
-                        <a href="#">Firefox</a>
+                        {% for tag in hot_tags %}
+                            <a href="{{ tag.get_absolute_url }}">{{ tag.text }}</a><br/>
+                        {% endfor %}
                     </h5>
                 </div>
 
                 <div class="members mt-5">
                     <h4><b>Best members</b></h4>
                     <h5>
-                        <a href="#">Dr. House</a><br>
-                        <a href="#">Cool Man</a><br>
-                        <a href="#">Kotov N.</a><br>
+                        {% for best_user in best_users %}
+                            <a disabled="true">{{ best_user.nickname }}</a><br/>
+                        {% endfor %}
                     </h5>
                 </div>
 
@@ -70,7 +67,7 @@
     <div class="toasts-container" style="position: absolute; top: 0; right: 0;">
     </div>
 </div>
-<footer class="footer gr-yell">
+<footer class="footer fixed-bottom gr-yell">
     <div class="container">
         <span class="text-muted">Made by N.Kotov.</span>
     </div>

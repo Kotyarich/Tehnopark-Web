@@ -2,9 +2,12 @@
 {% load static %}
 
 {% block registered_userpanel %}
-{% include "registered_panel.html" %}
+    {% if user.is_authenticated %}
+        {% include "registered_panel.html" %}
+    {% else %}
+        {% include "unregistered_panel.html" %}
+    {% endif %}
 {% endblock %}
-
 {% block content %}
 <div class="sort font-weight-bold mb-4">
     <h2>Tag: {{ tag }}</h2>

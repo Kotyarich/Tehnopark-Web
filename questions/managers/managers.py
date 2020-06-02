@@ -77,6 +77,10 @@ class ProfileManager(django_models.Manager):
         logger.info('User id={} is not authenticated'.format(user.id))
         return None
 
+    def get_best(self, limit):
+        best_users = self.order_by('-rating')[:limit]
+        return best_users
+
 
 class LikeManager(django_models.Manager):
     def like(self, profile, value, content_object):

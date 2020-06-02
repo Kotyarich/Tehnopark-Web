@@ -12,6 +12,16 @@ from questions.forms import *
 from questions.usecases import LikeQuestion
 
 
+class BestPanelMixin(ContextMixin):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        hot_tags = Tag.objects.most_popular()[:10]
+        context['hot_tags'] = hot_tags
+        best_users = Profile.objects.get_best(10)
+        context['best_users'] = best_users
+        return context
+
+
 class ProfileMixin(ContextMixin):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -20,7 +30,7 @@ class ProfileMixin(ContextMixin):
         return context
 
 
-class QuestionsList(ProfileMixin, ListView):
+class QuestionsList(BestPanelMixin, ProfileMixin, ListView):
     template_name = 'index.html'
     context_object_name = 'objects'
     paginate_by = 10
@@ -44,7 +54,7 @@ class TaggedQuestionsList(QuestionsList):
         return context
 
 
-class LoginView(FormView):
+class LoginView(BestPanelMixin, FormView):
     template_name = 'login.html'
     form_class = LoginForm
 
@@ -66,7 +76,7 @@ class LogoutView(RedirectView):
         return self.request.GET.get('redirect_to')
 
 
-class RegisterView(FormView):
+class RegisterView(BestPanelMixin, FormView):
     template_name = 'register.html'
     form_class = RegisterForm
     success_url = '/'
@@ -76,7 +86,7 @@ class RegisterView(FormView):
         return super(RegisterView, self).form_valid(form)
 
 
-class AskView(LoginRequiredMixin, ProfileMixin, FormView):
+class AskView(BestPanelMixin, LoginRequiredMixin, ProfileMixin, FormView):
     template_name = 'ask.html'
     form_class = QuestionForm
     login_url = 'login'
@@ -91,7 +101,7 @@ class AskView(LoginRequiredMixin, ProfileMixin, FormView):
         return super(AskView, self).form_valid(form)
 
 
-class SettingsView(LoginRequiredMixin, ProfileMixin, FormView):
+class SettingsView(BestPanelMixin, LoginRequiredMixin, ProfileMixin, FormView):
     template_name = 'settings.html'
     form_class = EditForm
     success_url = '/settings/'
@@ -121,7 +131,8 @@ class LikeView(LoginRequiredMixin, View):
         )
 
 
-class QuestionDisplay(ProfileMixin, SingleObjectMixin, ListView):
+class QuestionDisplay(BestPanelMixin, ProfileMixin, SingleObjectMixin,
+                      ListView):
     paginate_by = 10
     template_name = 'question.html'
     object = None
@@ -141,7 +152,7 @@ class QuestionDisplay(ProfileMixin, SingleObjectMixin, ListView):
         return self.object.get_answers()
 
 
-class QuestionsAnswer(SingleObjectMixin, FormView):
+class QuestionsAnswer(BestPanelMixin, SingleObjectMixin, FormView):
     template_name = 'question.html'
     form_class = AnswerForm
     object = None

@@ -12,11 +12,13 @@
                 <div class="mt-1">
                     <form method="POST">
                         {% csrf_token %}
-                        <button type="submit" add="true"
+                        <button {{ user.is_authenticated|yesno:",disabled"|default_if_none:"disabled" }}
+                                type="submit" add="true"
                                 value="{{ question.pk }}"
                                 class="like btn btn-primary brown">+
                         </button>
-                        <button type="submit" add="false"
+                        <button {{ user.is_authenticated|yesno:",disabled"|default_if_none:"disabled" }}
+                                type="submit" add="false"
                                 value="{{ question.pk }}"
                                 class="like btn btn-primary brown">-
                         </button>
