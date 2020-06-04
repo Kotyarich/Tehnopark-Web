@@ -92,3 +92,7 @@ class Answer(models.Model):
 
     def get_user(self):
         return Profile.objects.get(user=self.author)
+
+    def update_rating(self, add_value):
+        self.rating += add_value
+        self.save()

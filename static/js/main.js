@@ -31,7 +31,36 @@ $(document).ready(function () {
         }
 
         $.ajax({
-            url: "like/", // the endpoint
+            url: "/like/", // the endpoint
+            type: "POST", // http method
+            data: {
+                pk: id,
+                value: val,
+            }, // data sent with the post request
+            // handle a successful response
+            success: function (json) {
+                document.getElementById(id).innerHTML = json.rating;
+            },
+            // handle a non-successful response
+            error: function (xhr) {
+                console.log(xhr.status + ": " + xhr.responseText); // provide a bit more info about the error to the console
+            }
+        });
+    });
+
+    $('.like-answer').click(function (event) {
+        let val;
+        console.log('liekd')
+        event.preventDefault();
+        const id = $(this).val();
+        if (this.getAttribute('add') === 'true') {
+            val = 1;
+        } else {
+            val = -1;
+        }
+
+        $.ajax({
+            url: "/like_answer/", // the endpoint
             type: "POST", // http method
             data: {
                 pk: id,

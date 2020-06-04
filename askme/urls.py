@@ -32,5 +32,6 @@ urlpatterns = [
     path('question/<int:id>/', views.QuestionView.as_view(), name='question'),
     path('tag/<str:tag>', views.TaggedQuestionsList.as_view(), name='tag'),
     path('like/', views.LikeView.as_view(), name='like'),
+    path('like_answer/', views.LikeAnswerView.as_view(), name='like_answer'),
     path('search/', views.SearchView.as_view(), name='search')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

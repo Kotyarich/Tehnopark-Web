@@ -9,7 +9,7 @@ from django.views.generic.base import ContextMixin, RedirectView, View
 from django.views.generic.detail import SingleObjectMixin
 
 from questions.forms import *
-from questions.usecases import LikeQuestion
+from questions.usecases import LikeQuestion, LikeAnswer
 
 
 class BestPanelMixin(ContextMixin):
@@ -123,6 +123,24 @@ class LikeView(LoginRequiredMixin, View):
         pk = request.POST.get('pk')
 
         use_case = LikeQuestion(request.user, value, pk)
+        response_data = use_case.run_use_case()
+
+        return HttpResponse(
+            json.dumps(response_data),
+            content_type='application/json'
+        )
+
+
+class LikeAnswerView(LoginRequiredMixin, View):
+    login_url = 'login'
+    redirect_field_name = 'redirect_to'
+
+    @staticmethod
+    def post(request):
+        value = int(request.POST.get('value'))
+        pk = request.POST.get('pk')
+
+        use_case = LikeAnswer(request.user, value, pk)
         response_data = use_case.run_use_case()
 
         return HttpResponse(

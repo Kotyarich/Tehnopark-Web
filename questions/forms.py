@@ -227,7 +227,7 @@ class QuestionForm(forms.Form):
         tag_list = tags.split()
         if len(tag_list) == 0:
             raise forms.ValidationError("Tags are to be not empty")
-        for tag in tags:
+        for tag in tag_list:
             if not tag.isalpha():
                 raise forms.ValidationError("You can use only letters in tags")
 
