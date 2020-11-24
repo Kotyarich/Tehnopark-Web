@@ -151,15 +151,19 @@ class QuestionManagerTest(TestCase):
 
 class QuestionSearchTest(TestCase):
 
+    databases = ['default', 'sqlite3']
+
     @classmethod
     def setUpTestData(cls):
         cls.user = User.objects.create_user('login')
         cls.user.save()
+        cls.user.save(using='sqlite3')
         cls.q1 = Question.objects.create(
             author=cls.user,
             title='key words',
             text='long clever words',
         )
+        cls.q1.save(using='sqlite3')
         PgQuestionSearch.objects.create(question=cls.q1,
                                         search_vector_title='key words',
                                         search_vector_text='long clever words')
@@ -168,6 +172,7 @@ class QuestionSearchTest(TestCase):
             title='something clever',
             text='more about subject',
         )
+        cls.q2.save(using='sqlite3')
         PgQuestionSearch.objects.create(question=cls.q2,
                                         search_vector_title='something clever',
                                         search_vector_text='more about subject')
@@ -187,4 +192,14 @@ class QuestionSearchTest(TestCase):
     def test_ranked_search(self):
         expected = [self.q2, self.q1]
         result = [x.question for x in Question.objects.search('clever')]
+        self.assertEqual(expected, result)
+
+    def test_full_word_non_pg_search(self):
+        expected = [self.q1]
+        result = list(Question.objects.db_manager('sqlite3').search('key'))
+        self.assertEqual(expected, result)
+
+    def test_partial_word_non_pg_search(self):
+        expected = [self.q1]
+        result = list(Question.objects.db_manager('sqlite3').search('word'))
         self.assertEqual(expected, result)
