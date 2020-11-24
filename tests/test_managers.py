@@ -6,6 +6,7 @@ from django.contrib import auth
 from questions.models import User, Profile, Question, Like, Tag, \
     PgQuestionSearch
 from tests.request_stab import RequestStab
+from tests.quetion_builder import QuestionBuilder
 
 
 class LikeManagerTest(TestCase):
@@ -94,18 +95,11 @@ class TagManagerTest(TestCase):
         tag2 = Tag.objects.create(text='b')
         tag3 = Tag.objects.create(text='c')
 
-        new_question1 = Question.objects.create(author=user)
-        new_question1.tags.add(tag1)
-        new_question2 = Question.objects.create(author=user)
-        new_question2.tags.add(tag1)
-        new_question3 = Question.objects.create(author=user)
-        new_question3.tags.add(tag2)
-        old_question = Question.objects.create(
-            author=user,
-        )
-        old_question.created_at = datetime.now() - timedelta(days=120)
-        old_question.tags.add(tag3)
-        old_question.save()
+        QuestionBuilder(user).add_tag(tag1).build()
+        QuestionBuilder(user).add_tag(tag1).build()
+        QuestionBuilder(user).add_tag(tag2).build()
+        QuestionBuilder(user).add_tag(tag3).with_data(
+            datetime.now() - timedelta(days=120)).build().save()
 
         expected = [tag1, tag2]
         most_popular = list(Tag.objects.most_popular())
@@ -140,8 +134,7 @@ class QuestionManagerTest(TestCase):
     def test_get_tag(self):
         tag = Tag.objects.create(text='tag')
         Question.objects.create(author=self.user)
-        q2 = Question.objects.create(author=self.user)
-        q2.tags.add(tag)
+        q2 = QuestionBuilder(self.user).add_tag(tag).build()
 
         expected = [q2]
         tagged = list(Question.objects.get_tag('tag'))
@@ -150,7 +143,6 @@ class QuestionManagerTest(TestCase):
 
 
 class QuestionSearchTest(TestCase):
-
     databases = ['default', 'sqlite3']
 
     @classmethod
@@ -158,24 +150,14 @@ class QuestionSearchTest(TestCase):
         cls.user = User.objects.create_user('login')
         cls.user.save()
         cls.user.save(using='sqlite3')
-        cls.q1 = Question.objects.create(
-            author=cls.user,
-            title='key words',
-            text='long clever words',
-        )
+
+        cls.q1 = QuestionBuilder(cls.user).with_title('key_words')\
+            .with_text('long clever words').with_pg_search().build()
         cls.q1.save(using='sqlite3')
-        PgQuestionSearch.objects.create(question=cls.q1,
-                                        search_vector_title='key words',
-                                        search_vector_text='long clever words')
-        cls.q2 = Question.objects.create(
-            author=cls.user,
-            title='something clever',
-            text='more about subject',
-        )
+
+        cls.q2 = QuestionBuilder(cls.user).with_title('something clever') \
+            .with_text('more about subject').with_pg_search().build()
         cls.q2.save(using='sqlite3')
-        PgQuestionSearch.objects.create(question=cls.q2,
-                                        search_vector_title='something clever',
-                                        search_vector_text='more about subject')
 
     def test_full_word_search(self):
         expected = [self.q1]
