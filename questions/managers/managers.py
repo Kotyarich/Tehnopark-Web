@@ -4,7 +4,7 @@ from datetime import timedelta, datetime
 
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from django.db import models as django_models
-from django.db.models import Count, Q
+from django.db.models import Count
 
 logger = logging.getLogger(__name__)
 
@@ -64,10 +64,10 @@ class QuestionManager(FulltextSearchManager):
 class TagManager(django_models.Manager):
     def most_popular(self):
         """Tags with biggest amount of questions in last 3 months"""
-        three_months_ago = datetime.today() - timedelta(days=90)
-        return self.annotate(num_questions=Count(
-            'questions', filter=Q(questions__created_at=three_months_ago))
-        ).order_by('-num_questions')
+        three_months_ago = datetime.now() - timedelta(days=90)
+        return self.filter(questions__created_at__gte=three_months_ago) \
+            .annotate(num_questions=Count('questions')) \
+            .order_by('-num_questions')
 
 
 class ProfileManager(django_models.Manager):
