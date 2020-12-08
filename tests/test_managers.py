@@ -1,12 +1,11 @@
 from datetime import datetime, timedelta
 
-from django.test import TestCase
 from django.contrib import auth
+from django.test import TestCase
 
-from questions.models import User, Profile, Question, Like, Tag, \
-    PgQuestionSearch
-from tests.request_stab import RequestStab
+from questions.models import User, Profile, Question, Like, Tag
 from tests.quetion_builder import QuestionBuilder
+from tests.request_stab import RequestStab
 
 
 class LikeManagerTest(TestCase):

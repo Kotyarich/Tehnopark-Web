@@ -14,11 +14,13 @@
                         {% csrf_token %}
                         <button {{ user.is_authenticated|yesno:",disabled"|default_if_none:"disabled" }}
                                 type="submit" add="true"
+                                name="plus"
                                 value="{{ answer.pk }}"
                                 class="like-answer btn btn-primary brown">+
                         </button>
                         <button {{ user.is_authenticated|yesno:",disabled"|default_if_none:"disabled" }}
                                 type="submit" add="false"
+                                name="minus"
                                 value="{{ answer.pk }}"
                                 class="like-answer btn btn-primary brown">-
                         </button>
