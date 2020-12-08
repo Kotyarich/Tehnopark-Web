@@ -10,3 +10,4 @@ django-webtest
 faker
 channels
 django-widget-tweaks
+Pillow
