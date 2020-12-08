@@ -77,7 +77,7 @@ WSGI_APPLICATION = 'askme.wsgi.application'
 if os.getenv('GITHUB_WORKFLOW'):
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql1',
+            'ENGINE': 'django.db.backends.postgresql',
             'NAME': 'github-actions',
             'USER': 'postgres',
             'PASSWORD': 'postgres',
