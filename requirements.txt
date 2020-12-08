@@ -9,3 +9,4 @@ webtest
 django-webtest
 faker
 channels
+widget_tweaks
