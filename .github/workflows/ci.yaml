@@ -43,5 +43,9 @@ jobs:
         run: pip install -r requirements.txt
       - name: Run Migrations # run migrations to create table in side car db container
         run: python manage.py migrate
-      - name: Run Test # running tests
-        run: python manage.py test
+      - name: Run Unit Tests # running tests
+        run: python manage.py test tests/unit_tests/
+      - name: Run Integration Tests # running tests
+        run: python manage.py test tests/integration_tests/
+      - name: Run E2E Tests # running tests
+        run: python manage.py test tests/functional_tests/
