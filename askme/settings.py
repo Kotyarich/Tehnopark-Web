@@ -83,6 +83,10 @@ if os.getenv('GITHUB_WORKFLOW'):
             'PASSWORD': 'postgres',
             'HOST': 'localhost',
             'PORT': '5432',
+        },
+        'sqlite3': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         }
     }
 else:
