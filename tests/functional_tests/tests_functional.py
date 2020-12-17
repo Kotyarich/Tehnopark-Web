@@ -1,3 +1,5 @@
+import os
+
 import django_webtest
 
 from questions.models import Profile, User, Question
@@ -11,16 +13,26 @@ class PostCreationTests(django_webtest.WebTest):
         cls.question = Question.objects.create(
             author=cls.user, text='t', title='t'
         )
+        cls.passed = 0
 
-    def test_registration_success(self):
-        page = self.app.get('/', user=self.user)
-        assert self.question.title in page
+    def test_create_post_and_dislike(self):
+        n = int(os.getenv('TEST_REPEATS', 100))
 
-        question_page = self.app.get('/question/{}/'.format(self.question.pk),
-                                     user=self.user)
-        question_page.showbrowser()
+        for _ in range(n):
+            page = self.app.get('/', user=self.user)
+            assert self.question.title in page
 
-        post_form = question_page.forms['form']
-        post_form['text'] = 'Good question!'
-        question_page = post_form.submit().follow()
-        assert 'Good question!' in question_page
+            question_page = self.app.get(
+                '/question/{}/'.format(self.question.pk),
+                user=self.user
+            )
+
+            post_form = question_page.forms['form']
+            post_form['text'] = 'Good question!'
+            question_page = post_form.submit().follow()
+            assert 'Good question!' in question_page
+
+            self.passed += 1
+
+    def tearDown(self):
+        print(self.passed)

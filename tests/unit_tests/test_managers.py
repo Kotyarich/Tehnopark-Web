@@ -20,6 +20,7 @@ class LikeManagerTest(TestCase):
 
         expected_user_rating = self.profile.rating + 1
         expected_object_rating = question.rating + 1
+
         like = Like.objects.like(self.profile, 1, question)
 
         self.assertEqual(like.value, 1)

@@ -188,7 +188,8 @@ class QuestionsAnswer(BestPanelMixin, SingleObjectMixin, FormView):
         return super().post(request, *args, **kwargs)
 
     def get_success_url(self):
-        args = '?page={}#form'.format(self.pagesCount + 1)
+        args = '?page={}#form'.format(
+            self.pagesCount if self.pagesCount != 0 else 1)
         return self.object.get_absolute_url() + args
 
 
