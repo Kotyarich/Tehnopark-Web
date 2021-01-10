@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'questions',
     'widget_tweaks',
     'channels',
+    'behave_django',
 ]
 
 MIDDLEWARE = [
@@ -176,3 +177,6 @@ LOGGING = {
         },
     },
 }
+
+TEST_RUNNER = 'profiling.ProfilingRunner'
+TEST_PROFILE = 'profile'  # Set to a file path to create a pstats readable binary
